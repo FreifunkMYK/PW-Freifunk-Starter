@@ -1,0 +1,185 @@
+<?php
+
+class LdapSignIn extends WireData implements Module, ConfigurableModule
+{
+    protected $ldapSession = null;
+    protected $host, $port, $defaultLoginDomain, $userDefaultRoles, $protocol, $debugMode;
+
+    public static function getModuleInfo()
+    {
+        return array(
+            'title' => __('LDAP Helper'),
+            'version' => '051',
+            'author' => 'Conclurer GbR',
+            'summary' => __('Hendle LDAP Communication for Processwire'),
+            'singular' => true,
+            'autoload' => true
+        );
+    }
+
+    public function ___install()
+    {
+        if (!function_exists('ldap_connect'))
+            throw new WireException ('Please make sure that extension php_ldap is loaded.');
+    }
+
+    public function init()
+    {
+        if (isset ($this->data ['host'])) {
+            $host = explode(':', str_replace(array(
+                'ldap://',
+                'ldaps://'
+            ), array(
+                '',
+                ''
+            ), $this->data ['host']));
+            $this->protocol = (empty ($this->data ['useSSL'])) ? 'ldap://' : 'ldaps://';
+            $this->host = $host [0];
+            $this->port = empty ($host [1]) ? 389 : $host [1];
+        }
+
+        $this->debugMode = empty ($this->data ['debug']);
+
+        if (isset ($this->data ['loginDomain']))
+            $this->defaultLoginDomain = $this->data ['loginDomain'];
+        $this->userDefaultRoles = new WireArray ();
+
+        if (isset ($this->data ['userDefaultRoles'])) {
+            foreach ($this->data ['userDefaultRoles'] as $x) {
+                $role = $this->roles->get($x);
+                $this->userDefaultRoles->add($role);
+            }
+        }
+
+        $this->userDefaultRoles->add($this->roles->getGuestRole());
+        $this->userDefaultRoles = $this->userDefaultRoles->unique();
+
+        $this->session->addHook('login', $this, 'login');
+        $this->addHook('ProcessLogin::buildLoginForm', $this, 'hookLoginForm');
+        $this->addHookAfter('Modules::saveModuleConfigData', $this, 'hookModuleSave');
+    }
+
+    function make_ssha_password($password){
+      mt_srand((double)microtime()*1000000);
+      $salt = pack("CCCC", mt_rand(), mt_rand(), mt_rand(), mt_rand());
+      $hash = "{SSHA}" . base64_encode(pack("H*", sha1($password . $salt)) . $salt);
+      return $hash;
+    }
+
+    function ldap_helper_connect(){
+      if ($this->debugMode) ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7); // LDAP DebugMode
+      $connection ldap_connect($ip); // Annahme: der LDAP Server befindet sich auf diesem Host
+      if ($this->useV3) ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3); // Set LDAP_PROTOCOL_VERSION
+      return $connection;
+    }
+
+    function ldap_helper_write(){
+      return ldap_bind($ds,"cn=root,dc=ffmyk,dc=de", "L2EAPrNef4vAJP76ZPTpB2e5");
+    }
+
+    function ldap_helper_registrade_user(Array $nuser){
+
+      $username = $nuser["usernamge"];
+
+      // LDAP user anlegen
+      $info["objectclass"][0] = "top";
+      $info["objectclass"][1] = "person";
+      $info["objectclass"][2] = "organizationalPerson";
+      $info["objectclass"][3] = "inetorgperson";
+      $info["cn"] = $nuser["firstname"];
+      $info["sn"] = $nuser["lastname"];
+      $info["givenName"] = $nuser["username"];
+      $info["description"] = "ffmyk";
+
+      $password = make_ssha_password($nuser["password"]);
+
+      // If you have the plain text password instead, you could use:
+      $info['userPassword'] = $password;
+
+      $connect = ldap_helper_connect(); // Connect to LDAP Server
+      if(!$connect) return false; // Connection Failed
+
+      // bind mit passendem dn für aktulisierenden Zugriff
+      $r= ldap_helper_write();
+      // Add User to the Database
+      $r=ldap_add($connect, "uid=$username,ou=People,dc=ffmyk,dc=de", $info);
+
+      // Verbindung schließen
+      ldap_close($connect);
+
+      // Registrierung erfolgreich
+      return true;
+    }
+
+    static public function getModuleConfigInputfields(array $data)
+    {
+        $inputfields = new InputfieldWrapper ();
+
+        $hostField = wire('modules')->get('InputfieldText');
+        $hostField->name = 'host';
+        $hostField->columnWidth = 80;
+        $hostField->label = __('LDAP Server');
+        $hostField->required = 1;
+        if (isset ($data ['host']))
+            $hostField->value = $data ['host'];
+        $hostField->description = __('The hostname of your LDAP server. This can be either an ip address or a domain name. Supply a custom port (different than 389) separated with a colon. Examples: 10.0.0.1, controller.domain.com, controller.domain.com:388');
+        $inputfields->add($hostField);
+
+        $useSSLField = wire('modules')->get('InputfieldCheckbox');
+        $useSSLField->name = 'useSSL';
+        $useSSLField->columnWidth = 20;
+        $useSSLField->label = __('Use SSL?');
+        $useSSLField->description = __('Connects to the LDAP Server via SSL.');
+        if (isset ($data ['useSSL']) && $data ['useSSL'] == 1)
+            $useSSLField->checked = 1;
+        $inputfields->add($useSSLField);
+
+        $hostField = wire('modules')->get('InputfieldText');
+        $hostField->name = 'host';
+        $hostField->columnWidth = 80;
+        $hostField->label = __('LDAP Server');
+        $hostField->required = 1;
+        if (isset ($data ['host']))
+            $hostField->value = $data ['host'];
+        $hostField->description = __('The hostname of your LDAP server. This can be either an ip address or a domain name. Supply a custom port (different than 389) separated with a colon. Examples: 10.0.0.1, controller.domain.com, controller.domain.com:388');
+        $inputfields->add($hostField);
+
+        $useSSLField = wire('modules')->get('InputfieldCheckbox');
+        $useSSLField->name = 'useV3';
+        $useSSLField->columnWidth = 20;
+        $useSSLField->label = __('Use Protocol V3?');
+        $useSSLField->description = __('Use LDAP Protocol V3.');
+        if (isset ($data ['useSSL']) && $data ['useSSL'] == 1)
+            $useSSLField->checked = 1;
+        $inputfields->add($useSSLField);
+
+        $defaultLoginDomainField = wire('modules')->get('InputfieldText');
+        $defaultLoginDomainField->name = 'loginDomain';
+        $defaultLoginDomainField->label = __('Default Login Domain');
+        $defaultLoginDomainField->required = 1;
+        if (isset ($data ['loginDomain']))
+            $defaultLoginDomainField->value = $data ['loginDomain'];
+        $defaultLoginDomainField->description = __('This is the domain name used by default if the user does not supply a domain name. It will be added to the username, e.g. username@domainname.com');
+        $inputfields->add($defaultLoginDomainField);
+
+        $userDefaultRolesField = wire('modules')->get('InputfieldPageListSelectMultiple');
+        $userDefaultRolesField->name = 'userDefaultRoles';
+        $userDefaultRolesField->label = __('Default Roles for new Users');
+        $userDefaultRolesField->description = __('These user roles will be applied to all new LDAP users. Please note that the guest role is applied automatically.');
+        $userDefaultRolesField->parent_id = wire('roles')->getGuestRole()->parent_id;
+        if (isset ($data ['userDefaultRoles']))
+            $userDefaultRolesField->value = $data ['userDefaultRoles'];
+        $inputfields->add($userDefaultRolesField);
+
+        $debugField = wire('modules')->get('InputfieldCheckbox');
+        $debugField->name = 'debug';
+        $debugField->collapsed = Inputfield::collapsedYes;
+        $debugField->label = __('Debug Mode');
+        $debugField->description = __('Turns on the debug mode so you can see the output of PHP\'s ldap module in the apache log.');
+        if (isset ($data ['debug']) && $data ['debug'] == 1)
+            $debugField->checked = 1;
+        $inputfields->add($debugField);
+
+        return $inputfields;
+    }
+}
