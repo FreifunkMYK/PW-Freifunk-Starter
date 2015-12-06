@@ -143,22 +143,19 @@ $r = $pages->get("name=tp-link-cpe210-v1.1, template=hersteller");
 echo $r->name;
 
 $firmware = "Die Firmware Eingabe ist derzeit noch nicht umgesetzt.";
-$besonderheiten = (!empty($page->body) ? "Es gibt keine Besonderheiten" : $page->body );
 $features = getTag($page->features);
 $image = (count($page->image) ? $page->image->first()->size(250,250)->url : 'https://placehold.it/250x250?text=No Image');
+$infoBlocks = renderInfoBlocks();
 
 $output ="<article id='article' class='large-12 columns'>
             <div class='row'>
               <div class='large-9 columns'>
                 <h1>{$page->parent->title} $title</h1>
                 <p>
-                {$page->summary}
+                {$page->body}
                 </p>
                 <hr>
-                <h2>Besonderheiten</h2>
-                <p>
-                $besonderheiten
-                </p>
+                $infoBlocks
                 <h2>Firmware</h2>
                 <p>
                   Im Folgenden findest du die Firmware zum Router. Für den produktiven - also möglichst ausfallsicheren - Betrieb solltest du die Stable Firmware nutzen. Diese wird vor der Veröffentlichung getestet und enthält meistens keine Fehler mehr.

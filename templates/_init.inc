@@ -25,4 +25,4 @@ $title = $page->get("headline|title");
  // set a couple new fields that our output will use
  $page->set('authorURL', wire('config')->urls->root . 'authors/' . $page->createdUser->name . '/');
 
-include_once('_function.inc');
+require_once("./_function.inc");

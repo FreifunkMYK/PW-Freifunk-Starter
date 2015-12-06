@@ -86,6 +86,88 @@ function getTimeline($timeline){
 
 }
 
+/* Vorbereitung für Landingpages einzelner Communitys */
+function renderOnPageBlocks() {
+
+    // Get the current page instance from global scope.
+    $page = wire('page');
+    // Get the config instance from global scope.
+    $config = wire('config');
+
+    if (!count($page->on_page_blocks)) return '';
+
+    /* Get on-page blocks */
+    $pageBlocks = $page->on_page_blocks;
+
+    $out = '';
+
+    foreach ($pageBlocks as $block) {
+
+        //Create delegate template
+        $template = new TemplateFile($config->paths->templates . "markup/page-block-type-{$block->render_option}.inc");
+        //Assign the rendered view to content variable to show up on page-block-type-x.inc
+        $template->set('image', $block->image);
+
+        $content = str_replace(
+            // find these:
+            array('<ul>','<!-- pagebreak -->'),
+            // and replace with these:
+            array('<ul class="default-list-square">', '<br/>'),
+            // in the $block->body text
+            $block->body
+        );
+
+        //Assign the rendered view to content variables to show up on page-block-type-x.inc
+        $template->set('content', $content);
+        $template->set('headline', $block->get('headline|title'));
+
+        //Get the output and save it on $out.
+        $out .= $template->render();
+    }
+
+    return $out;
+}
+
+/* Rendern der Infoblocks von Router */
+function renderInfoBlocks() {
+
+    // Get the current page instance from global scope.
+    $page = wire('page');
+    // Get the config instance from global scope.
+    $config = wire('config');
+
+    if (!count($page->info_blocks)) return '';
+
+    /* Get Info blocks */
+    $infoBlocks = $page->info_blocks;
+
+    $out = '';
+
+    foreach ($infoBlocks as $block) {
+
+        //Create delegate template
+        $template = new TemplateFile($config->paths->templates . "markup/info-block.inc");
+
+        $content = str_replace(
+            // find these:
+            array('<ul>','<!-- pagebreak -->'),
+            // and replace with these:
+            array('<ul class="default-list-square">', '<br/>'),
+            // in the $block->body text
+            $block->body
+        );
+
+        //Assign the rendered view to content variables to show up on page-block-type-x.inc
+        $template->set('content', $content);
+        $template->set('headline', $block->get('title'));
+
+        //Get the output and save it on $out.
+        $out .= $template->render();
+    }
+
+    return $out;
+}
+
 function listPages(PageArray $pages){
   $output = "";
   foreach($pages as $page){
@@ -93,6 +175,7 @@ function listPages(PageArray $pages){
   }
   return $output;
 }
+
 
 function renderSidebarFilter(){
   $hersteller = listPages(wire('pages')->find("template=hersteller"));

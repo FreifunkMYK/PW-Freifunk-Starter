@@ -48,8 +48,16 @@ if(!wire('user')->isLoggedin()){
 <html class="no-js" lang="de">
 <head>
   <?php
-    // Include the style Files
-    foreach($config->styles as $key => $file) echo "\n\t<link rel='stylesheet' type='text/css' href='$file'>";
+    if($modules->isInstalled("AllInOneMinify")){
+      foreach($config->styles as $key => $file) $stylearray[] = $file;
+      ?>
+      <link rel="stylesheet" href="<?php echo AllInOneMinify::CSS(
+            $stylearray
+        ); ?>"> <?php
+    } else {
+      // Include the style Files
+      foreach($config->styles as $key => $file) echo "\n\t<link rel='stylesheet' type='text/css' href='$file'>";
+    }
   ?>
 
   <link rel="icon" type="image/png" href='<?= $config->urls->templates. 'img/favicon.png' ?>'>
