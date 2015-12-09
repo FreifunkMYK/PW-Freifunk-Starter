@@ -1,4 +1,54 @@
 <?php
+/***************************************************************************************
+ * _functions.inc
+ *
+ * The following defined here so that they can be used by multiple template files.
+ * This file contains various "render" functions that generate markups specific
+ * to the site profile (theme).
+ *
+ * What's Here:
+ *
+ * getTag() - Render a Tag List.
+ * renderOnPageBlocks() - Render on-page blocks.
+ * renderInfoBlocks() - Render Info blocks.
+ * renderCopyrights(Page $page) - Render site copyrights content
+ * getReferences() - Render testimonial/references
+ * renderSidebar() - Return sidebar item as html markup
+ * renderGoogleLocationMap() - Render google map locations
+ * getContactUsForm() - Render contact form
+ *
+ *
+ */
+
+ /**
+  * renderCopyrights(Page $page) - Render site copyrights content
+  * You can find site copyrights content under Admin > Pages > Home edit page and find Global site settings.
+  *
+  * @param Page $page - instance of the page.
+  * @return String - html markup string of copyright statement
+  */
+ function renderCopyrights(Page $page) {
+
+     if (!$page->summary) return '';
+
+     $text = str_replace(
+         // find these:
+         array('{year}'),
+         // and replace with these:
+         array(date('Y')),
+         // in the copyright_text text
+         $page->summary);
+
+     return $text;
+ }
+
+ /**
+  * getTag()
+  *
+  * @param  Tags $tags - instance of PageArray
+  *         Limit $limit - limit of the output
+  * @return String - html markup string of Tag list elements.
+  */
 function getTag(PageArray $tags, $limit = 0){
   $list = "";
   $count = "0";
@@ -11,7 +61,8 @@ function getTag(PageArray $tags, $limit = 0){
   return $list;
 }
 
-function getTimeline($timeline){
+
+function renderTimeline($timeline){
   // Überprüfe ob $timeline von der richtigen Instants ist
   if(!$timeline instanceof PageArray) {
     if($timeline instanceof Page){
@@ -197,7 +248,11 @@ function renderSidebarFilter(){
   return $output;
 }
 
-// LDAP
+/**********************************************
+ * LDAP Helper functions
+ * Soll in Zukunft zu in ein Module ausgegliedert werden
+ *********************************************/
+
 function make_ssha_password($password){
   mt_srand((double)microtime()*1000000);
   $salt = pack("CCCC", mt_rand(), mt_rand(), mt_rand(), mt_rand());

@@ -120,7 +120,7 @@ $output .= "<section id='freifunk-faq' data-magellan-destination='freifunk-faq' 
             <hr>";
 
 // Timeline
-$output .= getTimeline($pages->find("template=post, timeline=1, sort=-date, limit=6"));
+$output .= renderTimeline($pages->find("template=post, timeline=1, sort=-date, limit=6"));
 
 // Mitmachen
 $output .= "<section id='mitmachen' data-magellan-destination='mitmachen' class='info container row'>
