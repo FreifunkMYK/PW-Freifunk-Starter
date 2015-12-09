@@ -56,28 +56,29 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
 
         $this->session->addHook('login', $this, 'login');
         $this->addHook('ProcessLogin::buildLoginForm', $this, 'hookLoginForm');
+        $this->pages->addHookBefore("delete", $this, "ldapHelperDeleteUsers");
         $this->addHookAfter('Modules::saveModuleConfigData', $this, 'hookModuleSave');
     }
 
-    function make_ssha_password($password){
+    function makeSshaPassword($password){
       mt_srand((double)microtime()*1000000);
       $salt = pack("CCCC", mt_rand(), mt_rand(), mt_rand(), mt_rand());
       $hash = "{SSHA}" . base64_encode(pack("H*", sha1($password . $salt)) . $salt);
       return $hash;
     }
 
-    function ldap_helper_connect(){
+    function ldapHelperConnect(){
       if ($this->debugMode) ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7); // LDAP DebugMode
-      $connection ldap_connect($ip); // Annahme: der LDAP Server befindet sich auf diesem Host
+      $connection ldapConnect($ip); // Annahme: der LDAP Server befindet sich auf diesem Host
       if ($this->useV3) ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3); // Set LDAP_PROTOCOL_VERSION
       return $connection;
     }
 
-    function ldap_helper_write(){
+    function ldapHelperWrite(){
       return ldap_bind($ds,"cn=root,dc=ffmyk,dc=de", "L2EAPrNef4vAJP76ZPTpB2e5");
     }
 
-    function ldap_helper_registrade_user(Array $nuser){
+    function ldapHelperRegistradeUser(Array $nuser){
 
       $username = $nuser["usernamge"];
 
@@ -91,18 +92,18 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
       $info["givenName"] = $nuser["username"];
       $info["description"] = "ffmyk";
 
-      $password = make_ssha_password($nuser["password"]);
+      $password = makeSshaPassword($nuser["password"]);
 
       // If you have the plain text password instead, you could use:
       $info['userPassword'] = $password;
 
-      $connect = ldap_helper_connect(); // Connect to LDAP Server
+      $connect = ldapHelperConnect(); // Connect to LDAP Server
       if(!$connect) return false; // Connection Failed
 
       // bind mit passendem dn für aktulisierenden Zugriff
-      $r= ldap_helper_write();
+      $r= ldapHelperWrite();
       // Add User to the Database
-      $r=ldap_add($connect, "uid=$username,ou=People,dc=ffmyk,dc=de", $info);
+      $r= ldap_add($connect, "uid=$username,ou=People,dc=ffmyk,dc=de", $info);
 
       // Verbindung schließen
       ldap_close($connect);
@@ -111,6 +112,14 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
       return true;
     }
 
+    public function ldapHelperDeleteUser($event){
+        $page = $event->arguments("page");
+        
+        if ($page->id && $page->template->name === "user") return; // Return if User is not deleted
+        
+        $this->message("LDAP User: {$page->name} deleted");
+    }
+    
     static public function getModuleConfigInputfields(array $data)
     {
         $inputfields = new InputfieldWrapper ();
