@@ -117,7 +117,18 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
         
         if ($page->id && $page->template->name === "user") return; // Return if User is not deleted
         
-        $this->message("LDAP User: {$page->name} deleted");
+        $username = $page->name;
+        
+        // bind mit passendem dn für aktualisierenden Zugriff
+        $r= ldapHelperWrite();
+        
+        // Delete User from LDAP
+        $dn= "uid=$username,ou=People,dc=ffmyk,dc=de";
+        if(ldap_delete( $r , $dn )){ // Return true or false
+            $this->log->save('LDAP', 'LDAP delete User: $username');
+        } else {
+            $this->log->save('LDAP', 'LDAP failed to delete User: $username deleted');
+        }
     }
     
     static public function getModuleConfigInputfields(array $data)
