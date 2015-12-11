@@ -45,9 +45,9 @@
  /**
   * getTag()
   *
-  * @param  Tags $tags - instance of PageArray
-  *         Limit $limit - limit of the output
-  * @return String - html markup string of Tag list elements.
+  * @param  PageArray $tags - instance of PageArray
+  * @param  int $limit - limit of the output
+  * @return string - html markup string of Tag list elements.
   */
 function getTag(PageArray $tags, $limit = 0){
   $list = "";
@@ -78,6 +78,7 @@ function renderTimeline($timeline){
       throw new WireException('getTimeline requires a PageArray, Page or selector string');
     }
   }
+
 
   // Count for the while Schleife
   $count = 0;
@@ -177,6 +178,17 @@ function renderOnPageBlocks() {
     }
 
     return $out;
+}
+
+function renderPage() {
+  $page = wire('page');
+  $config = wire('config');
+
+  //Create delegate template
+  $template = new TemplateFile($config->paths->templates . "markup/{$page->template}.inc");
+
+  //Get the output and save it on $out.
+  return $template->render();
 }
 
 /* Rendern der Infoblocks von Router */
@@ -291,7 +303,10 @@ function ldap_helper_registrade_user(Array $nuser){
   $info['userPassword'] = $password;
 
   $connect = ldap_helper_connect(); // Connect to LDAP Server
-  if(!$connect) return false; // Connection Failed
+  if(!$connect){
+    $error = ldap_err2str(ldap_errno($connect));
+    return false;
+  } // Connection Failed
 
   // bind mit passendem dn für aktulisierenden Zugriff
   $r= ldap_helper_root($connect);
