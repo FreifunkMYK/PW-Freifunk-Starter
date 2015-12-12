@@ -5,6 +5,7 @@ $content = '';
 // form was submitted so we process the form
 if($input->post->submit) {
 
+        $ldapHelper = $modules->get("ldapHelper");
          //Sanatize and assign variables data before creating user.
         $nuser["username"] = $sanitizer->username($input->post->username);
         $nuser["email"] = $sanitizer->email($input->post->email);
@@ -13,7 +14,7 @@ if($input->post->submit) {
         $nuser["lastname"] = $sanitizer->text($input->post->lastname);
 
         if(wire('users')->get($nuser["username"]) instanceof NullPage){
-          if(ldap_helper_registrade_user($nuser)){
+          if($ldapHelper->ldapHelperRegistradeUser($nuser)){
             $new_user = new User();
             $new_user->of(false);
             $new_user->name = $nuser["username"];
