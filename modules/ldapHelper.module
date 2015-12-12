@@ -1,15 +1,15 @@
 <?php
 
-class LdapSignIn extends WireData implements Module, ConfigurableModule
+class ldapHelper extends WireData implements Module, ConfigurableModule
 {
     protected $ldapSession = null;
-    protected $host, $port, $defaultLoginDomain, $userDefaultRoles, $protocol, $debugMode;
+    protected $host, $port, $defaultLoginDomain, $userDefaultRoles, $protocol, $debugMode, $useV3, $admin, $secret;
 
     public static function getModuleInfo()
     {
         return array(
             'title' => __('LDAP Helper'),
-            'version' => '051',
+            'version' => '001',
             'author' => 'Conclurer GbR',
             'summary' => __('Hendle LDAP Communication for Processwire'),
             'singular' => true,
@@ -44,6 +44,16 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
             $this->defaultLoginDomain = $this->data ['loginDomain'];
         $this->userDefaultRoles = new WireArray ();
 
+        if (isset ($this->data ['admin']))
+            $this->admin = $this->data ['admin'];
+        $this->userDefaultRoles = new WireArray ();
+
+        if (isset ($this->data ['secret']))
+            $this->secret = $this->data ['secret'];
+
+        if (isset ($this->data ['useV3']))
+            $this->useV3 = $this->data ['useV3'];
+
         if (isset ($this->data ['userDefaultRoles'])) {
             foreach ($this->data ['userDefaultRoles'] as $x) {
                 $role = $this->roles->get($x);
@@ -54,31 +64,68 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
         $this->userDefaultRoles->add($this->roles->getGuestRole());
         $this->userDefaultRoles = $this->userDefaultRoles->unique();
 
-        $this->session->addHook('login', $this, 'login');
-        $this->addHook('ProcessLogin::buildLoginForm', $this, 'hookLoginForm');
-        $this->pages->addHookBefore("delete", $this, "ldapHelperDeleteUsers");
+        #$this->session->addHook('login', $this, 'login');
+        #$this->addHook('ProcessLogin::buildLoginForm', $this, 'hookLoginForm');
+        $this->pages->addHookBefore("delete", $this, "ldapHelperDeleteUser");
         $this->addHookAfter('Modules::saveModuleConfigData', $this, 'hookModuleSave');
     }
 
-    function makeSshaPassword($password){
+    /*public function ___hookLogin(HookEvent $event)
+    {
+        if ($event->return)
+            return; // Skip if already logged in
+        $username = $event->arguments [0];
+        $password = $event->arguments [1];
+        // skip if user already exists locally
+        if (!$this->users->get("name=$username") instanceof NullPage)
+            return;
+        // Set default user domain name if not given
+        $username = str_replace('@', '', $username) == $username ? "$username@{$this->defaultLoginDomain}" : $username;
+        if ($this->ldapUserLogin($username, $password)) {
+            $wireUserName = $this->sanitizer->pageName($username);
+            $user = $this->users->get("name=$wireUserName");
+            if ($user instanceof NullPage) {
+                $usersPath = $this->users->getGuestUser()->parent;
+                $user = new User ();
+                $user->parent = $usersPath;
+                $user->name = $wireUserName;
+                $user->pass = $password;
+                foreach ($this->userDefaultRoles as $role)
+                    $user->addRole($role);
+                $user->save();
+            } else {
+                $user->pass = $password;
+                $user->save();
+            }
+            // Reset given LDAP-Username to WireUsername
+            $user = $this->session->login($wireUserName, $password);
+            $event->return = $user;
+            $this->message($this->_('Logged in via LDAP'));
+            return;
+        }
+        $event->return = null;
+        return;
+    }*/
+
+    protected function makeSshaPassword($password){
       mt_srand((double)microtime()*1000000);
       $salt = pack("CCCC", mt_rand(), mt_rand(), mt_rand(), mt_rand());
       $hash = "{SSHA}" . base64_encode(pack("H*", sha1($password . $salt)) . $salt);
       return $hash;
     }
 
-    function ldapHelperConnect(){
+    protected function ldapHelperConnect(){
       if ($this->debugMode) ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7); // LDAP DebugMode
-      $connection ldapConnect($ip); // Annahme: der LDAP Server befindet sich auf diesem Host
+      if(!$connection = ldap_connect($this->host, $this->port)) return $this->log->save('LDAP', printf(__("Failed to connect LDAP %d pages."), ldap_err2str(ldap_errno($connection)))); // Annahme: der LDAP Server befindet sich auf diesem Host
       if ($this->useV3) ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3); // Set LDAP_PROTOCOL_VERSION
       return $connection;
     }
 
-    function ldapHelperWrite(){
-      return ldap_bind($ds,"cn=root,dc=ffmyk,dc=de", "L2EAPrNef4vAJP76ZPTpB2e5");
+    protected function ldapHelperWrite($ds){
+      return ldap_bind($ds,"cn={$this->admin},dc=ffmyk,dc=de", "$this->secret");
     }
 
-    function ldapHelperRegistradeUser(Array $nuser){
+    public function ldapHelperRegistradeUser(Array $nuser){
 
       $username = $nuser["usernamge"];
 
@@ -92,16 +139,16 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
       $info["givenName"] = $nuser["username"];
       $info["description"] = "ffmyk";
 
-      $password = makeSshaPassword($nuser["password"]);
+      $password = $this->makeSshaPassword($nuser["password"]);
 
       // If you have the plain text password instead, you could use:
       $info['userPassword'] = $password;
 
-      $connect = ldapHelperConnect(); // Connect to LDAP Server
+      $connect = $this->ldapHelperConnect(); // Connect to LDAP Server
       if(!$connect) return false; // Connection Failed
 
       // bind mit passendem dn für aktulisierenden Zugriff
-      $r= ldapHelperWrite();
+      $r= $this->ldapHelperWrite();
       // Add User to the Database
       $r= ldap_add($connect, "uid=$username,ou=People,dc=ffmyk,dc=de", $info);
 
@@ -112,27 +159,50 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
       return true;
     }
 
-    public function ldapHelperDeleteUser($event){
+    public function ldapHelperDeleteUser(HookEvent $event){
         $page = $event->arguments("page");
-        
-        if ($page->id && $page->template->name === "user") return; // Return if User is not deleted
-        
+
+        if (!$page->id && !$page->template->name === "user") return; // Return if User is not deleted
         $username = $page->name;
-        
+
         // bind mit passendem dn für aktualisierenden Zugriff
-        $r= ldapHelperWrite();
-        
+        $connect = $this->ldapHelperConnect();
+        $r= $this->ldapHelperWrite($connect);
+
         // Delete User from LDAP
         $dn= "uid=$username,ou=People,dc=ffmyk,dc=de";
-        if(ldap_delete( $r , $dn )){ // Return true or false
-            $this->log->save('LDAP', 'LDAP delete User: $username');
+        if(ldap_delete( $connect , $dn )){ // Return true or false
+            $this->message("Delete LDAP User: $username");
+            $this->log->save('ldap_helper', "Delete User: $username");
         } else {
-            $this->log->save('LDAP', 'LDAP failed to delete User: $username deleted');
+            $massage = ldap_err2str(ldap_errno($connect));
+            $this->message("Delete LDAP User failed $massage");
+            $this->log->save('ldap_helper', printf($this->_("Failed to delete User %d pages."), "$username, $massage"));
         }
+
+        ldap_close($connect);
     }
-    
-    static public function getModuleConfigInputfields(array $data)
+
+    public function validateConfiguration()
     {
+        $connection = $this->ldapHelperConnect();
+        if (!$connection) {
+            return;
+        }
+        $this->message($this->_('Successfully connected to LDAP server.'));
+        $bind = $this->ldapHelperWrite($connection);
+        $ldapMessage = ldap_err2str(ldap_errno($connection));
+        $this->message("Bind $ldapMessage");
+    }
+
+    public function hookModuleSave(HookEvent $event){
+       $className = $event->arguments [0];
+       if ($className != get_class($this))
+           return;
+       $this->validateConfiguration();
+   }
+
+    static public function getModuleConfigInputfields(array $data){
         $inputfields = new InputfieldWrapper ();
 
         $hostField = wire('modules')->get('InputfieldText');
@@ -154,24 +224,14 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
             $useSSLField->checked = 1;
         $inputfields->add($useSSLField);
 
-        $hostField = wire('modules')->get('InputfieldText');
-        $hostField->name = 'host';
-        $hostField->columnWidth = 80;
-        $hostField->label = __('LDAP Server');
-        $hostField->required = 1;
-        if (isset ($data ['host']))
-            $hostField->value = $data ['host'];
-        $hostField->description = __('The hostname of your LDAP server. This can be either an ip address or a domain name. Supply a custom port (different than 389) separated with a colon. Examples: 10.0.0.1, controller.domain.com, controller.domain.com:388');
-        $inputfields->add($hostField);
-
-        $useSSLField = wire('modules')->get('InputfieldCheckbox');
-        $useSSLField->name = 'useV3';
-        $useSSLField->columnWidth = 20;
-        $useSSLField->label = __('Use Protocol V3?');
-        $useSSLField->description = __('Use LDAP Protocol V3.');
-        if (isset ($data ['useSSL']) && $data ['useSSL'] == 1)
-            $useSSLField->checked = 1;
-        $inputfields->add($useSSLField);
+        $useV3Field = wire('modules')->get('InputfieldCheckbox');
+        $useV3Field->name = 'useV3';
+        $useV3Field->columnWidth = 20;
+        $useV3Field->label = __('Use Protocol V3?');
+        $useV3Field->description = __('Use LDAP Protocol V3.');
+        if (isset ($data ['useV3']) && $data ['useV3'] == 1)
+            $useV3Field->checked = 1;
+        $inputfields->add($useV3Field);
 
         $defaultLoginDomainField = wire('modules')->get('InputfieldText');
         $defaultLoginDomainField->name = 'loginDomain';
@@ -181,6 +241,26 @@ class LdapSignIn extends WireData implements Module, ConfigurableModule
             $defaultLoginDomainField->value = $data ['loginDomain'];
         $defaultLoginDomainField->description = __('This is the domain name used by default if the user does not supply a domain name. It will be added to the username, e.g. username@domainname.com');
         $inputfields->add($defaultLoginDomainField);
+
+        $adminLoginField = wire('modules')->get('InputfieldText');
+        $adminLoginField->name = 'admin';
+        $adminLoginField->columnWidth = 50;
+        $adminLoginField->label = __('LDAP Admin');
+        $adminLoginField->required = 1;
+        if (isset ($data ['admin']))
+            $adminLoginField->value = $data ['admin'];
+        $adminLoginField->description = __('An LDAP account with access to add/edit/delet users.');
+        $inputfields->add($adminLoginField);
+
+        $secretField = wire('modules')->get('InputfieldText');
+        $secretField->attr ('type','password');
+        $secretField->name = 'secret';
+        $secretField->columnWidth = 50;
+        $secretField->label = __('LDAP Admin Secret');
+        $secretField->description = __('Needet to use with LDAP Admin to add/edit/delete users.');
+        if (isset ($data ['secret']))
+            $secretField->value = $data ['secret'];
+        $inputfields->add($secretField);
 
         $userDefaultRolesField = wire('modules')->get('InputfieldPageListSelectMultiple');
         $userDefaultRolesField->name = 'userDefaultRoles';
