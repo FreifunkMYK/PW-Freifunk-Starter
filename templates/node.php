@@ -1,0 +1,5 @@
+<?php
+
+setNodeData();
+
+$content = renderPage();
