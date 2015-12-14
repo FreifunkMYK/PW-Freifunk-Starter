@@ -129,14 +129,5 @@ if(!wire('user')->isLoggedin()){
   foreach($config->scripts as $file) echo "<script src='$file'></script>";
   ?>
 
-  <!-- Zur Optimierung werden diese scripte und CSS files später hier geladen!
-  <link href="http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-
-  <script src="bower_components/jquery/dist/jquery.min.js"></script>
-  <script src="bower_components/foundation/js/foundation.min.js"></script>
-  <script src="js/app.js"></script>
-  -->
-
 </body>
 </html>

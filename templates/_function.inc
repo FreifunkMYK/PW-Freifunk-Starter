@@ -180,12 +180,12 @@ function renderOnPageBlocks() {
     return $out;
 }
 
-function renderPage() {
-  $page = wire('page');
+function renderPage($template = "") {
+  if(empty($template)) $template = wire('page')->template;
   $config = wire('config');
 
   //Create delegate template
-  $template = new TemplateFile($config->paths->templates . "markup/{$page->template}.inc");
+  $template = new TemplateFile($config->paths->templates . "markup/$template.inc");
 
   //Get the output and save it on $out.
   return $template->render();
@@ -258,4 +258,59 @@ function renderSidebarFilter(){
               </div><!-- #sidebar-->";
 
   return $output;
+}
+
+function getNodeInfo($search){
+  $file = file_get_contents('http://ffmyk.niyawe.de/status/data/nodelist.json');
+
+  $data = json_decode($file, true);
+
+  foreach($data['nodes'] as $nodes){
+    if($nodes['id'] === $search){
+      return $nodes;
+    }
+  }
+  return "Nothing Found";
+}
+
+function setNodeData(Page $p){
+
+  if(empty($node = getNodeInfo(strtolower(str_replace(":", "", $p->title))))) return;
+
+  $p->of(false);
+  $p->subtitle = $node['name'];
+  $p->latitude = $node['position']['lat'];
+  $p->longitude = $node['position']['long'];
+  $p->online = $node['status']['online'];
+  $p->lastconnection = strtotime($node['status']['lastcontact']);
+  $p->save();
+  $p->of(true);
+}
+
+// Render a Page Title
+function renderPageName($title){
+	$sanitizer = wire('sanitizer');
+	$string = iconv("UTF-8", "ASCII//TRANSLIT", $title);
+	$string = preg_replace ( '/[^a-z0-9-]/', '', $string ); // Entfernen der Sonderzeichen
+	$string = preg_replace("/\s+/", " ", $string);  // Überflüssige Leerzeichen entfernen
+	$string = trim($string); // Leerzeichen am Anfang und Ende entfernen
+	$string = $sanitizer->pageName($string);
+
+	return $string;
+}
+
+// Create Page
+function createPage($template, $parent, $page){
+	if(!$parent instanceof Page) $parent = wire('pages')->get("/$parent/"); // Wenn keine Seite übergeben wird suche eine raus.
+
+	$pageName = renderPageName($page);
+
+	$t = new Page();
+	$t->template = $template;
+	$t->parent = $parent;
+	$t->name = $pageName;
+	$t->title = $page;
+	$t->save();
+
+	return $t;
 }
