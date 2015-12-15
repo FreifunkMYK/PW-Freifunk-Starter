@@ -27,21 +27,10 @@
   * @param Page $page - instance of the page.
   * @return String - html markup string of copyright statement
   */
- function renderCopyrights(Page $page) {
 
-     if (!$page->summary) return '';
-
-     $text = str_replace(
-         // find these:
-         array('{year}'),
-         // and replace with these:
-         array(date('Y')),
-         // in the copyright_text text
-         $page->summary);
-
-     return $text;
- }
-
+#########################################################
+# getter
+#########################################################
  /**
   * getTag()
   *
@@ -61,6 +50,48 @@ function getTag(PageArray $tags, $limit = 0){
   return $list;
 }
 
+#########################################################
+# setter
+#########################################################
+function setNodeInfo(){
+  $file = file_get_contents('http://ffmyk.niyawe.de/status/data/nodelist.json');
+
+  $data = json_decode($file, true);
+
+  foreach($data['nodes'] as $node){
+    $title = preg_replace('/(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})/', "$1-$2-$3-$4-$5-$6", $node['id']);
+    $p = wire('pages')->get("template=node, title|name=$title");
+
+    if($p instanceof NullPage) continue;
+
+    $p->of(false);
+    $p->subtitle = $node['name'];
+    $p->latitude = $node['position']['lat'];
+    $p->longitude = $node['position']['long'];
+    $p->online = $node['status']['online'];
+    $p->lastconnection = strtotime($node['status']['lastcontact']);
+    $p->save();
+    $p->of(true);
+  }
+}
+
+###################################################
+# Render
+####################################################
+function renderCopyrights(Page $page) {
+
+    if (!$page->summary) return '';
+
+    $text = str_replace(
+        // find these:
+        array('{year}'),
+        // and replace with these:
+        array(date('Y')),
+        // in the copyright_text text
+        $page->summary);
+
+    return $text;
+}
 
 function renderTimeline($timeline){
   // Überprüfe ob $timeline von der richtigen Instants ist
@@ -231,15 +262,6 @@ function renderInfoBlocks() {
     return $out;
 }
 
-function listPages(PageArray $pages){
-  $output = "";
-  foreach($pages as $page){
-    $output .= "<li><a href='{$page->httpUrl}'>{$page->title}</a></li>";
-  }
-  return $output;
-}
-
-
 function renderSidebarFilter(){
   $hersteller = listPages(wire('pages')->find("template=hersteller"));
   $features = listPages(wire('pages')->find("template=features"));
@@ -260,38 +282,10 @@ function renderSidebarFilter(){
   return $output;
 }
 
-function getNodeInfo($search){
-  $file = file_get_contents('http://ffmyk.niyawe.de/status/data/nodelist.json');
-
-  $data = json_decode($file, true);
-
-  foreach($data['nodes'] as $nodes){
-    if($nodes['id'] === $search){
-      return $nodes;
-    }
-  }
-  return "Nothing Found";
-}
-
-function setNodeData(Page $p){
-
-  if(empty($node = getNodeInfo(strtolower(str_replace(":", "", $p->title))))) return;
-
-  $p->of(false);
-  $p->subtitle = $node['name'];
-  $p->latitude = $node['position']['lat'];
-  $p->longitude = $node['position']['long'];
-  $p->online = $node['status']['online'];
-  $p->lastconnection = strtotime($node['status']['lastcontact']);
-  $p->save();
-  $p->of(true);
-}
-
 // Render a Page Title
 function renderPageName($title){
 	$sanitizer = wire('sanitizer');
 	$string = iconv("UTF-8", "ASCII//TRANSLIT", $title);
-	$string = preg_replace ( '/[^a-z0-9-]/', '', $string ); // Entfernen der Sonderzeichen
 	$string = preg_replace("/\s+/", " ", $string);  // Überflüssige Leerzeichen entfernen
 	$string = trim($string); // Leerzeichen am Anfang und Ende entfernen
 	$string = $sanitizer->pageName($string);
@@ -299,7 +293,27 @@ function renderPageName($title){
 	return $string;
 }
 
-// Create Page
+
+##########################################################
+# Sonstiges
+#########################################################
+function listPages(PageArray $pages){
+  $output = "";
+  foreach($pages as $page){
+    $output .= "<li><a href='{$page->httpUrl}'>{$page->title}</a></li>";
+  }
+  return $output;
+}
+
+
+/**
+ * Function to Create Processwire Pages
+ *
+ * @param  string $template     the template for the new page
+ * @param  Page/string $parent  parent Page can be a Page or string
+ * @param  string $page         Title of the new Page
+ * @return PageArray            The new Page
+ */
 function createPage($template, $parent, $page){
 	if(!$parent instanceof Page) $parent = wire('pages')->get("/$parent/"); // Wenn keine Seite übergeben wird suche eine raus.
 
@@ -314,3 +328,9 @@ function createPage($template, $parent, $page){
 
 	return $t;
 }
+
+#################################################
+# Hooks
+#################################################
+
+wire()->addHook('LazyCron::every2Minutes', null, 'setNodeInfo');

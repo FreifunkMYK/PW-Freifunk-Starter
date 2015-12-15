@@ -23,6 +23,7 @@ $config->scripts->prepend($config->urls->templates . 'bower_components/modernizr
 $config->scripts->add($config->urls->templates . 'bower_components/jquery/dist/jquery.min.js');
 $config->scripts->add($config->urls->templates . 'bower_components/foundation/js/foundation.min.js');
 $config->scripts->add($config->urls->templates . 'js/app.js');
+$config->scripts->add($config->urls->templates . 'js/foundation/foundation.magellan.js');
 
 
 /********************************
@@ -67,7 +68,7 @@ if(!wire('user')->isLoggedin()){
 </head>
 <body>
 
-  <header class="sticky contain-to-grid">
+  <header class="fixed contain-to-grid">
     <?php include_once('_nav.inc'); ?>
   </header><!--#sticky-->
 

@@ -22,7 +22,7 @@ if(count($page->slider)){
 }
 
 // Landingpage Navigation
-$output .= "<div data-magellan-expedition='sticky' class='second-nav sticky'>
+$output .= "<div data-magellan-expedition='fixed' class='second-nav'>
              <div class='row'>
                <div class='small-12 medium-7 medium-centered large-6 large-centered columns'>
                  <dl class='sub-nav'>

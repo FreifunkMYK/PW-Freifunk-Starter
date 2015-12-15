@@ -56,7 +56,7 @@ function isActive(Page $page, Page $nav){
             <li>
               <a href="<?= $pages->get('title|name=lesezeichen')->httpURL ?>"><i class='fa fa-bookmark'></i> Lesezeichen</a>
             </li>
-            <?php if($user->hasRole('superuser') || $user->hasRole('manager')){ ?>
+            <?php if(wire('user')->hasRole('superuser') || wire('user')->hasRole('manager')){ ?>
               <li>
                 <a href="<?=$pages->get(1)->httpUrl?>processwire"><i class='fa fa-cogs'></i> Admin</a>
               </li>

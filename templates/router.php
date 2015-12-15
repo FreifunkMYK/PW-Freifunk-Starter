@@ -138,5 +138,4 @@
 }
 
 $firmware = getFirmwareList($page);*/
-
 $content = renderPage();
