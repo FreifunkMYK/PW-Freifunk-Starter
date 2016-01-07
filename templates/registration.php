@@ -5,10 +5,8 @@ $content = '';
 // form was submitted so we process the form
 if($input->post->submit) {
 
-        // Load LDAP Helper Module for Registration
         $ldapHelper = $modules->get("ldapHelper");
-
-        //Sanatize and assign variables data before creating user.
+         //Sanatize and assign variables data before creating user.
         $nuser["username"] = $sanitizer->username($input->post->username);
         $nuser["email"] = $sanitizer->email($input->post->email);
         $nuser["password"] = $sanitizer->text($input->post->password);

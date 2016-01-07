@@ -14,17 +14,16 @@ if($page->brower_title) $browserTitle = $page->browser_title;
   else $browserTitle = $page->title . '&bull;' . $homepage->headline;
 
 // add our stylesheet
-$config->styles->add($config->urls->templates . 'stylesheets/app.css');
+#$config->styles->add($config->urls->templates . 'stylesheets/app.css');
+$config->styles->add('stylesheets/app.css');
 $config->styles->add('https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css');
 $config->styles->add('https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css');
 
 // add our javascripts
-$config->scripts->prepend($config->urls->templates . 'bower_components/modernizr/modernizr.js');
-$config->scripts->add($config->urls->templates . 'bower_components/jquery/dist/jquery.min.js');
-$config->scripts->add($config->urls->templates . 'bower_components/foundation/js/foundation.min.js');
-$config->scripts->add($config->urls->templates . 'js/app.js');
-$config->scripts->add($config->urls->templates . 'js/foundation/foundation.magellan.js');
-
+$config->scripts->prepend($config->urls->templates.'bower_components/modernizr/modernizr.js');
+$config->scripts->add($config->urls->templates.'bower_components/jquery/dist/jquery.min.js');
+$config->scripts->add($config->urls->templates.'bower_components/foundation/js/foundation.min.js');
+$config->scripts->add($config->urls->templates.'js/app.js');
 
 /********************************
 * Hendle Login
@@ -50,11 +49,9 @@ if(!wire('user')->isLoggedin()){
 <head>
   <?php
     if($modules->isInstalled("AllInOneMinify")){
-      foreach($config->styles as $key => $file) $stylearray[] = $file;
+      foreach($config->styles as $key => $file) $stylesheets[] = $file;
       ?>
-      <link rel="stylesheet" href="<?php echo AllInOneMinify::CSS(
-            $stylearray
-        ); ?>"> <?php
+      <link rel="stylesheet" href="<?php echo AllInOneMinify::CSS($stylesheets); ?>"> <?php
     } else {
       // Include the style Files
       foreach($config->styles as $key => $file) echo "\n\t<link rel='stylesheet' type='text/css' href='$file'>";
@@ -67,10 +64,9 @@ if(!wire('user')->isLoggedin()){
 
 </head>
 <body>
-
   <header class="fixed contain-to-grid">
     <?php include_once('_nav.inc'); ?>
-  </header><!--#sticky-->
+  </header><!-- #sticky -->
 
   <?php if($page->id != 1){ ?>
   <div class="contain-breadcrumbs">
@@ -126,9 +122,16 @@ if(!wire('user')->isLoggedin()){
   </footer>
 
   <?php
-  // Render Scriptfiles
-  foreach($config->scripts as $file) echo "<script src='$file'></script>";
-  ?>
+	 #if($modules->isInstalled("AllInOneMinify")){
+      	if(false){
+		foreach($config->scripts as $key => $file) $scriptfiles[] = str_replace($config->urls->templates, "", $file);
+      	print_r($scriptfiles);?>
+      		<script src="<?php echo AIOM::JS($scriptfiles); ?>"> <?php
+    	} else {
+      		// Include the style Files
+      		foreach($config->scripts as $file) echo "\n\t<script src='$file'></script>";
+    }
+  ?>  
 
 </body>
 </html>
