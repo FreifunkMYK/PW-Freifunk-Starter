@@ -80,19 +80,19 @@ if(!wire('user')->isLoggedin()){
   </div>
   <?php } ?>
 
-  <?php
-    if($input->post->user && $input->post->pass) {
-      echo "<div class='alert-box warning' data-alert>" . $session->login_error . "<a href='#' class='close'>&times;</a></div>";
-      }
-    ?>
-
   <section id="container" class="<?php echo $page->template .' id-'. $id; ?>">
+    <?php
+      if($input->post->user && $input->post->pass) {
+        echo "<div class='alert-box warning' data-alert>" . $session->login_error . "<a href='#' class='close'>&times;</a></div>";
+        }
+      ?>
     <?php
     // Homepage (Landingpage) wird direkt im container
     echo ($page->id === 1 ? $content :   '<div id="content" class="row">'.$content.'</div>');
     ?>
   </section>
 
+  
   <footer class="footer">
     <div class="row">
       <div class="small-12 medium-4 medium-push-8 columns">

@@ -26,13 +26,6 @@ $content = "<div id='article' class='blog-list large-9 columns'>
               $output
             </div><!-- #article -->
             <div id='sidebar' class='large-3 columns'>
-              <div class='panel'>
-                <h5>Mitmachen</h5>
-                <p>
-                  Unterstütze Freifunk und stelle deinen eigenen Freifunk-Router auf um das Netz zu erweitern.
-                </p>
-                <a href='#' class='button expand'>Informier dich jetzt!</a>
-              </div>
               <h5>Neueste Router</h5>
               <ul>
                 <li>Koblenz, Marktplatz</li>
