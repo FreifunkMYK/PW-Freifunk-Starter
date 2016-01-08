@@ -10,7 +10,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
             'title' => __('LDAP Helper'),
             'version' => '003',
             'author' => 'Kreativmonkey',
-            'summary' => __('Hendle LDAP Communication for Processwire'),
+            'summary' => __('Handle LDAP communication for ProcessWire'),
             'singular' => true,
             'autoload' => true
         );
@@ -18,7 +18,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
 
     public function ___install() {
         if (!function_exists('ldap_connect'))
-            throw new WireException ('Please make sure that extension php_ldap is loaded.');
+            throw new WireException ('Please ensure php_ldap is loaded.');
     }
 
     public function init() {
@@ -105,19 +105,19 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
         if (!$page->id && !$page->template->name === "user") return; // Return if User is not deleted
         $username = $page->name;
 
-        // bind mit passendem dn für aktualisierenden Zugriff
+        // bind with correct DN for write access
         $connect = $this->ldapHelperConnect();
         $r= $this->ldapHelperWrite($connect);
 
-        // Delete User from LDAP
+        // Delete user from LDAP
         $dn= "uid=$username,ou=People,dc=ffmyk,dc=de";
         if(ldap_delete( $connect , $dn )){ // Return true or false
-            $this->message("Delete LDAP User: $username");
-            $this->log->save('ldap_helper', "Delete User: $username");
+            $this->message("Delete LDAP user: $username");
+            $this->log->save('ldap_helper', "Delete user: $username");
         } else {
-            $massage = ldap_err2str(ldap_errno($connect));
-            $this->message("Delete LDAP User failed $massage");
-            $this->log->save('ldap_helper', printf($this->_("Failed to delete User %d pages."), "$username, $massage"));
+            $message = ldap_err2str(ldap_errno($connect));
+            $this->message("Delete LDAP user failed: $message");
+            $this->log->save('ldap_helper', printf($this->_("Failed to delete User %s: %s"), $username, $message));
         }
 
         ldap_close($connect);
@@ -132,7 +132,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
 
     protected function ldapHelperConnect() {
       if ($this->debugMode) ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7); // LDAP DebugMode
-      if(!$connection = ldap_connect($this->host, $this->port)) return $this->log->save('LDAP', printf(__("Failed to connect LDAP %d pages."), ldap_err2str(ldap_errno($connection)))); // Annahme: der LDAP Server befindet sich auf diesem Host
+      if(!$connection = ldap_connect($this->host, $this->port)) return $this->log->save('LDAP', printf(__("Failed to connect LDAP: %s"), ldap_err2str(ldap_errno($connection)))); 
       if ($this->useV3) ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3); // Set LDAP_PROTOCOL_VERSION
       return $connection;
     }
@@ -175,7 +175,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
         $useSSLField->name = 'useSSL';
         $useSSLField->columnWidth = 20;
         $useSSLField->label = __('Use SSL?');
-        $useSSLField->description = __('Connects to the LDAP Server via SSL.');
+        $useSSLField->description = __('Connects to the LDAP server via SSL.');
         if (isset ($data ['useSSL']) && $data ['useSSL'] == 1)
             $useSSLField->checked = 1;
         $inputfields->add($useSSLField);
@@ -205,7 +205,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
         $adminLoginField->required = 1;
         if (isset ($data ['admin']))
             $adminLoginField->value = $data ['admin'];
-        $adminLoginField->description = __('An LDAP account with access to add/edit/delet users.');
+        $adminLoginField->description = __('A LDAP account with permission to add/edit/delete users.');
         $inputfields->add($adminLoginField);
 
         $secretField = wire('modules')->get('InputfieldText');
@@ -213,14 +213,14 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
         $secretField->name = 'secret';
         $secretField->columnWidth = 50;
         $secretField->label = __('LDAP Admin Secret');
-        $secretField->description = __('Needet to use with LDAP Admin to add/edit/delete users.');
+        $secretField->description = __('Password for the previously named account.');
         if (isset ($data ['secret']))
             $secretField->value = $data ['secret'];
         $inputfields->add($secretField);
 
         $userDefaultRolesField = wire('modules')->get('InputfieldPageListSelectMultiple');
         $userDefaultRolesField->name = 'userDefaultRoles';
-        $userDefaultRolesField->label = __('Default Roles for new Users');
+        $userDefaultRolesField->label = __('Default roles for new users');
         $userDefaultRolesField->description = __('These user roles will be applied to all new LDAP users. Please note that the guest role is applied automatically.');
         $userDefaultRolesField->parent_id = wire('roles')->getGuestRole()->parent_id;
         if (isset ($data ['userDefaultRoles']))
