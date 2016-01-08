@@ -15,7 +15,7 @@ if(count($page->slider)){
               </li>";
   }
   $output .= "<div id='slider'>
-               <ul class='main-orbit' data-orbit>
+               <ul class='main-orbit' data-orbit data-options='resume_on_mouseout:true'>
                  $slides
                </ul>
               </div>";
