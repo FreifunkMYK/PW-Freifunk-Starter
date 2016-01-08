@@ -29,6 +29,8 @@ if($input->urlSegment1){
     case 'add':
       if(!wire('user')->isLoggedin()){
         $content = "Pleas Login or Registrat";
+        if(isset($input->get->mac)) $session->mac = $input->get->mac;
+        if(isset($input->get->key)) $session->key = $input->get->key;
       } elseif(!$input->post->submit) {
         if(isset($input->get->mac)) $session->mac = $input->get->mac;
         if(isset($input->get->key)) $session->key = $input->get->key;
@@ -60,6 +62,8 @@ if($input->urlSegment1){
                     Key : {$n->key}<br>
                     Benutzer: {$n->parent->title}
                     </p>";
+        $session->remove('key');
+        $session->remove('mac');
       }
       break;
     default:
