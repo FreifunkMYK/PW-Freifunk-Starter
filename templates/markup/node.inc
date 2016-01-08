@@ -1,5 +1,5 @@
 <article id='article' class='large-12 columns'>
-  <h1><?=$page->title?></h1>
+  <h1><?=$page->title?>s</h1>
   <div class='row'>
     <div class='large-3'>
       <?=$page->subtitle?>

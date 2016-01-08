@@ -15,7 +15,7 @@ if($page->brower_title) $browserTitle = $page->browser_title;
 
 // add our stylesheet
 #$config->styles->add($config->urls->templates . 'stylesheets/app.css');
-$config->styles->add('stylesheets/app.css');
+$config->styles->add($config->urls->templates.'stylesheets/app.css');
 $config->styles->add('https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css');
 $config->styles->add('https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css');
 
@@ -95,34 +95,24 @@ if(!wire('user')->isLoggedin()){
 
   <footer class="footer">
     <div class="row">
-      <div class="small-12 medium-6 medium-push-6 columns">
-        <p class="logo show-for-small-only"><i class="fi-target"></i> FIGHT CLUB</p>
-        <form class="footer-form">
-          <div class="row">
-            <div class="medium-9 medium-push-3 columns">
-              <label>
-                <label for="email" class="contact">Contact Us</label>
-                <input type="email" id="email" placeholder="Email Address" />
-              </label><br/>
-              <label>
-                <textarea rows="5" id="message" placeholder="Message"></textarea>
-              </label><br/>
-              <button class="submit" type="submit" value="Submit">Send</button>
-            </div>
-          </div>
-        </form>
+      <div class="small-12 medium-4 medium-push-8 columns">
+        <ul class="inline-list social">
+          <li><a href="https://twitter.com/freifunkmyk"><i class="fa fa-twitter"></i></a></li>
+          <li><a mailto="info@freifunk-myk.de"><i class="fa fa-envelope"></i></a></li>
+          <li><a href="https://github.com/FreifunkMYK"><i class="fa fa-github"></i></a></li>
+        </ul>
+        <p class="copywrite">Design by kreativmonkey with foundation</p>
       </div>
-      <div class="small-12 medium-6 medium-pull-6 columns">
-        <p class="logo hide-for-small-only"><i class="fi-target"></i> Freifunk-Myk</p>
-        <p class="footer-links">
-          <a href="#">Home</a>
-          <a href="#">Blog</a>
-          <a href="#">Pricing</a>
-          <a href="#">About</a>
-          <a href="#">Faq</a>
-          <a href="#">Contact</a>
-        </p>
-        <p class="copywrite">Copywrite not copywrite © 2015</p>
+      <div class="small-12 medium-8 medium-pull-4 columns">
+        <a class="ff-logo regular" href="<?=$pages->get("/")->httpUrl?>">Freifunk-Myk</a>
+        <ul class="inline-list">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Faq</a></li>
+          <li><a href="#">Kontakt</a></li>
+        </ul>
+        <p class="copywrite">Copywrite not copywrite © <?=date("Y")?></p>
       </div>
     </div>
   </footer>
