@@ -80,6 +80,12 @@ if(!wire('user')->isLoggedin()){
   </div>
   <?php } ?>
 
+  <?php
+    if($input->post->user && $input->post->pass) {
+      echo "<div class='alert-box warning' data-alert>" . $session->login_error . "<a href='#' class='close'>&times;</a></div>";
+      }
+    ?>
+
   <section id="container" class="<?php echo $page->template .' id-'. $id; ?>">
     <?php
     // Homepage (Landingpage) wird direkt im container
@@ -131,7 +137,7 @@ if(!wire('user')->isLoggedin()){
       		// Include the style Files
       		foreach($config->scripts as $file) echo "\n\t<script src='$file'></script>";
     }
-  ?>  
+  ?>
 
 </body>
 </html>

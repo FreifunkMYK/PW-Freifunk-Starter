@@ -79,7 +79,7 @@ function isActive(Page $page, Page $nav){
   </section>
 </nav>
 <?php if(!wire('user')->isLoggedin()){ ?>
-<div id="signin" class="f-dropdown small content" data-dropdown-content>
+<div id="signin" class="f-dropdown small content" data-dropdown-content aria-autoclose="false">
     <form id="formLogin" action='./' method='post'>
       <div >
         <input name="user" id="user" placeholder="Benutzername" type="text" />
