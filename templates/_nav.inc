@@ -51,7 +51,7 @@ function isActive(Page $page, Page $nav){
               <a href="<?= $pages->get(8544)->httpURL ?>"><i class='fa fa-user'></i> Profil</a>
             </li>
             <li>
-              <a href="<?= $pages->get(8544)->httpURL ?>"><i class='fa fa-code-fork'></i> Entwürfe</a>
+              <a href="<?= $pages->get("/node/")->httpURL ?>"><i class='fa fa-wifi'></i> Nodes</a>
             </li>
             <li>
               <a href="<?= $pages->get('title|name=lesezeichen')->httpURL ?>"><i class='fa fa-bookmark'></i> Lesezeichen</a>
