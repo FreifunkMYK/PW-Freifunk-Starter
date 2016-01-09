@@ -1,5 +1,4 @@
 <?php
 
-setNodeData();
 
 $content = renderPage();

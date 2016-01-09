@@ -29,6 +29,7 @@ if($input->urlSegment1){
     case 'add':
       if(!wire('user')->isLoggedin()){
         $content = "Pleas Login or Registrat";
+        $session->redirectUrl = $page->path."add/";
         if(isset($input->get->mac)) $session->mac = $input->get->mac;
         if(isset($input->get->key)) $session->key = $input->get->key;
       } elseif(!$input->post->submit) {

@@ -16,7 +16,7 @@ if($page->brower_title) $browserTitle = $page->browser_title;
 // add our stylesheet
 #$config->styles->add($config->urls->templates . 'stylesheets/app.css');
 $config->styles->add($config->urls->templates.'stylesheets/app.css');
-$config->styles->add('https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css');
+#$config->styles->add('https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css');
 $config->styles->add('https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css');
 
 // add our javascripts
@@ -35,7 +35,12 @@ if(!wire('user')->isLoggedin()){
 
 		if($session->login($u, $pass)) {
 			// login successful
-			$session->redirect($page->path);
+			if($session->redirectUrl){
+        $session->redirect($session->redirectUrl, false);
+        $session->remove('redirectUrl');
+      } else {
+			   $session->redirect($page->path, false);
+       }
 		}  else {
 			$session->login_error = '<strong>Login fehlgeschlagen!</strong> Bitte versuche es noch einmal oder benutze die \'Passwort vergessen\' Funktion.';
 		}
@@ -92,7 +97,6 @@ if(!wire('user')->isLoggedin()){
     ?>
   </section>
 
-  
   <footer class="footer">
     <div class="row">
       <div class="small-12 medium-4 medium-push-8 columns">
@@ -122,7 +126,7 @@ if(!wire('user')->isLoggedin()){
       	if(false){
 		foreach($config->scripts as $key => $file) $scriptfiles[] = str_replace($config->urls->templates, "", $file);
       	print_r($scriptfiles);?>
-      		<script src="<?php echo AIOM::JS($scriptfiles); ?>"> <?php
+      		<script src="<?php echo AIOM::JS($scriptfiles); ?>"> </script><?php
     	} else {
       		// Include the style Files
       		foreach($config->scripts as $file) echo "\n\t<script src='$file'></script>";
