@@ -15,8 +15,8 @@ if($page->brower_title) $browserTitle = $page->browser_title;
 
 // add our stylesheet
 #$config->styles->add($config->urls->templates . 'stylesheets/app.css');
-$config->styles->add('stylesheets/app.css');
-$config->styles->add('https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css');
+$config->styles->add($config->urls->templates.'stylesheets/app.css');
+#$config->styles->add('https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css');
 $config->styles->add('https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css');
 
 // add our javascripts
@@ -35,7 +35,12 @@ if(!wire('user')->isLoggedin()){
 
 		if($session->login($u, $pass)) {
 			// login successful
-			$session->redirect($page->path);
+			if($session->redirectUrl){
+        $session->redirect($session->redirectUrl, false);
+        $session->remove('redirectUrl');
+      } else {
+			   $session->redirect($page->path, false);
+       }
 		}  else {
 			$session->login_error = '<strong>Login fehlgeschlagen!</strong> Bitte versuche es noch einmal oder benutze die \'Passwort vergessen\' Funktion.';
 		}
@@ -80,13 +85,12 @@ if(!wire('user')->isLoggedin()){
   </div>
   <?php } ?>
 
-  <?php
-    if($input->post->user && $input->post->pass) {
-      echo "<div class='alert-box warning' data-alert>" . $session->login_error . "<a href='#' class='close'>&times;</a></div>";
-      }
-    ?>
-
   <section id="container" class="<?php echo $page->template .' id-'. $id; ?>">
+    <?php
+      if($input->post->user && $input->post->pass) {
+        echo "<div class='alert-box warning' data-alert>" . $session->login_error . "<a href='#' class='close'>&times;</a></div>";
+        }
+      ?>
     <?php
     // Homepage (Landingpage) wird direkt im container
     echo ($page->id === 1 ? $content :   '<div id="content" class="row">'.$content.'</div>');
@@ -95,34 +99,24 @@ if(!wire('user')->isLoggedin()){
 
   <footer class="footer">
     <div class="row">
-      <div class="small-12 medium-6 medium-push-6 columns">
-        <p class="logo show-for-small-only"><i class="fi-target"></i> FIGHT CLUB</p>
-        <form class="footer-form">
-          <div class="row">
-            <div class="medium-9 medium-push-3 columns">
-              <label>
-                <label for="email" class="contact">Contact Us</label>
-                <input type="email" id="email" placeholder="Email Address" />
-              </label><br/>
-              <label>
-                <textarea rows="5" id="message" placeholder="Message"></textarea>
-              </label><br/>
-              <button class="submit" type="submit" value="Submit">Send</button>
-            </div>
-          </div>
-        </form>
+      <div class="small-12 medium-4 medium-push-8 columns">
+        <ul class="inline-list social">
+          <li><a href="https://twitter.com/freifunkmyk"><i class="fa fa-twitter"></i></a></li>
+          <li><a mailto="info@freifunk-myk.de"><i class="fa fa-envelope"></i></a></li>
+          <li><a href="https://github.com/FreifunkMYK"><i class="fa fa-github"></i></a></li>
+        </ul>
+        <p class="copywrite">Design by kreativmonkey with foundation</p>
       </div>
-      <div class="small-12 medium-6 medium-pull-6 columns">
-        <p class="logo hide-for-small-only"><i class="fi-target"></i> Freifunk-Myk</p>
-        <p class="footer-links">
-          <a href="#">Home</a>
-          <a href="#">Blog</a>
-          <a href="#">Pricing</a>
-          <a href="#">About</a>
-          <a href="#">Faq</a>
-          <a href="#">Contact</a>
-        </p>
-        <p class="copywrite">Copywrite not copywrite © 2015</p>
+      <div class="small-12 medium-8 medium-pull-4 columns">
+        <a class="ff-logo regular" href="<?=$pages->get("/")->httpUrl?>">Freifunk-Myk</a>
+        <ul class="inline-list">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Faq</a></li>
+          <li><a href="#">Kontakt</a></li>
+        </ul>
+        <p class="copywrite">Copywrite not copywrite © <?=date("Y")?></p>
       </div>
     </div>
   </footer>
@@ -132,7 +126,7 @@ if(!wire('user')->isLoggedin()){
       	if(false){
 		foreach($config->scripts as $key => $file) $scriptfiles[] = str_replace($config->urls->templates, "", $file);
       	print_r($scriptfiles);?>
-      		<script src="<?php echo AIOM::JS($scriptfiles); ?>"> <?php
+      		<script src="<?php echo AIOM::JS($scriptfiles); ?>"> </script><?php
     	} else {
       		// Include the style Files
       		foreach($config->scripts as $file) echo "\n\t<script src='$file'></script>";
