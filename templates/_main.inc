@@ -17,7 +17,7 @@ if($page->brower_title) $browserTitle = $page->browser_title;
 #$config->styles->add($config->urls->templates . 'stylesheets/app.css');
 $config->styles->add($config->urls->templates.'stylesheets/app.css');
 #$config->styles->add('https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css');
-$config->styles->add('https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css');
+#$config->styles->add('https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css');
 
 // add our javascripts
 $config->scripts->prepend($config->urls->templates.'bower_components/modernizr/modernizr.js');
