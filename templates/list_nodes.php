@@ -96,6 +96,7 @@ if($input->urlSegment1){
 
       break;
     case 'add':
+<<<<<<< Updated upstream
       // Check if user is logged in and save the input->get in the session variable.
       if(!wire('user')->isLoggedin()){
         $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
@@ -110,6 +111,43 @@ if($input->urlSegment1){
         //  Register Node
         $content = registerNode($input->post->mac, $input->post->key);
         $content = "<h2>Node Hinzugefügt</h2><ul>$content</ul>";
+=======
+      // Speichere MAC und Key in der Session wenn vorhanden;
+      if(isset($input->get->mac)) $session->mac = $input->get->mac;
+      if(isset($input->get->key)) $session->key = $input->get->key;
+
+      // Checken ob der Nutzer eingeloggt ist
+      if(wire('user')->isLoggedin()){
+        // Wurde das Formular abgesendet?
+        if($input->post->submit){
+          // Registriere den neuen Node
+          switch (registerNode($input->post->mac, $input->post->key)) {
+            case '-1':
+              $content = "Der Node existiert bereits und du hast keine Rechte ihn zu ändern";
+              break;
+            case '0':
+              $content = "Es ist ein Fehler aufgetreten, der Administrator wurde Informiet. Bitte versuche es zu einem späteren Zeitpunkt noch einmal."
+              break;
+            case '1':
+              // Zurück zur Privaten Routerliste
+              $session->redirect($pages->get('/node/')->httpUrl, false);
+              break;
+            case '2':
+              $content = "Dein Node wurde erfolgreich aktualisiert."
+              break;
+            default:
+              $content = "Es ist ein allgemeiner Fehler aufgetreten";
+              break;
+          }
+        } else {
+          // Gebe das Formular aus
+          $content = renderPage('node_registration');
+        }
+      } else {
+        $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
+        // Speicher die URL um auf diese Seite zurück zu kehren!
+        $session->redirect($session->redirectUrl, false);
+>>>>>>> Stashed changes
       }
       break;
       case 'keys':
