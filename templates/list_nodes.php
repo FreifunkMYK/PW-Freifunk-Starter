@@ -96,22 +96,6 @@ if($input->urlSegment1){
 
       break;
     case 'add':
-<<<<<<< Updated upstream
-      // Check if user is logged in and save the input->get in the session variable.
-      if(!wire('user')->isLoggedin()){
-        $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
-        $session->redirectUrl = $page->path."add/";
-        if(isset($input->get->mac)) $session->mac = strtoupper($sanitizer->text($input->get->mac));
-        if(isset($input->get->key)) $session->key = strtoupper($sanitizer->text($input->get->key));
-      } elseif(!$input->post->submit) {
-        if(isset($input->get->mac)) $session->mac = strtoupper($sanitizer->text($input->get->mac));
-        if(isset($input->get->key)) $session->key = strtoupper($sanitizer->text($input->get->key));
-        $content = renderPage('node_registration');
-      } else {
-        //  Register Node
-        $content = registerNode($input->post->mac, $input->post->key);
-        $content = "<h2>Node Hinzugefügt</h2><ul>$content</ul>";
-=======
       // Speichere MAC und Key in der Session wenn vorhanden;
       if(isset($input->get->mac)) $session->mac = $input->get->mac;
       if(isset($input->get->key)) $session->key = $input->get->key;
@@ -147,7 +131,6 @@ if($input->urlSegment1){
         $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
         // Speicher die URL um auf diese Seite zurück zu kehren!
         $session->redirect($session->redirectUrl, false);
->>>>>>> Stashed changes
       }
       break;
       case 'keys':
@@ -202,7 +185,7 @@ if($input->urlSegment1){
   $user = wire('user')->id;
   $nodes = $pages->find("operator=$user, template=node, sort=-subtitle");
   $table = '';
-  
+
   foreach($nodes as $node){
 
     $table .="<tr class='".($node->online == 1 ? "alert success" : "alert danger")."'>
