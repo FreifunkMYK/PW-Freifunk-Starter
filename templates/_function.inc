@@ -340,13 +340,8 @@ function createPage($template, $parent, $title){
  * @param string $key     the Node PublicKey for the VPN connection_status
  * @return int            -1 = Existiert bereits; 0 = Fehler; 1 = true; 2 = aktualisiert
  */
-<<<<<<< Updated upstream
-function registerNode($mac, $key){
-  if(empty($mac) || empty($key)) return false;
-=======
 function registerNode($mac, $key, &$content){
   if(empty($mac) || empty($key)) return 0;
->>>>>>> Stashed changes
 
   // Definiere Systemvariablen
   $page = wire('page');
@@ -354,21 +349,6 @@ function registerNode($mac, $key, &$content){
   $parent = wire('pages')->get($page->id);
   $operator = wire('user')->id;
 
-<<<<<<< Updated upstream
-  // If node exist?
-  if($node instanceof Nullpage){
-    $titlemac = strtoupper($mac);
-    $n = createPage('node', $parent, $titlemac);
-    $title = "Hinzugefügt";
-    // Owner is not current User
-  } elseif($node->operator->id != $operator) {
-    $content = "<li>Der Node mit der MAC Adresse: $mac ist bereits registriert.</li>";
-    return $content;
-    // Node Aktualisieren
-  } else {
-    $n = $node;
-    $title = "Aktualisiert";
-=======
   // Existiert der Node bereits?
   if($node instanceof Nullpage){
     $titlemac = strtoupper($mac);
@@ -381,7 +361,6 @@ function registerNode($mac, $key, &$content){
   } else {
     $n = $node;
     $fehlercode = 2;
->>>>>>> Stashed changes
   }
 
   $n->key = $key;
@@ -390,11 +369,6 @@ function registerNode($mac, $key, &$content){
   $n->save();
   $n->of(true);
 
-<<<<<<< Updated upstream
-  $content = "<li>$title: $mac</li>";
-
-=======
->>>>>>> Stashed changes
   wire('session')->remove('key');
   wire('session')->remove('mac');
 
