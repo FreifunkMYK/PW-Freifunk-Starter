@@ -110,14 +110,14 @@ if($input->urlSegment1){
               $content = "Der Node existiert bereits und du hast keine Rechte ihn zu ändern";
               break;
             case '0':
-              $content = "Es ist ein Fehler aufgetreten, der Administrator wurde Informiet. Bitte versuche es zu einem späteren Zeitpunkt noch einmal."
+              $content = "Es ist ein Fehler aufgetreten, der Administrator wurde Informiet. Bitte versuche es zu einem späteren Zeitpunkt noch einmal.";
               break;
             case '1':
               // Zurück zur Privaten Routerliste
               $session->redirect($pages->get('/node/')->httpUrl, false);
               break;
             case '2':
-              $content = "Dein Node wurde erfolgreich aktualisiert."
+              $content = "Dein Node wurde erfolgreich aktualisiert.";
               break;
             default:
               $content = "Es ist ein allgemeiner Fehler aufgetreten";
