@@ -36,7 +36,7 @@ $table = new TemplateFile($config->paths->templates . "markup/router_firmware_ac
 $table->set('stableSysupgrade', $stableSysupgrade);
 $table->set('stableFactory', $stableFactory);
 $table->set('betaSysupgrade', $betaSysupgrade);
-$table->set('betaFactory', $betaSysupgrade);
+$table->set('betaFactory', $betaFactory);
 
 $page->set('firmwareTable', $table->render());
 

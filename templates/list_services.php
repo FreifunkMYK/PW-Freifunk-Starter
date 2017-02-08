@@ -5,11 +5,10 @@ if($input->urlSegment2) throw new Wire404Exception();
 if($input->urlSegment1){
   switch($input->urlSegment1){
     case 'list':
-      $services = $pages->find('template=staticip, sort=-subtitle');
+      $services = $pages->find('template=service, sort=-subtitle');
       $table = '';
 
       foreach($services as $service){
-
         $status = ($service->online == 1 ? "alert success" : "alert danger");
         $table .="<tr class='$status'>
                   <td>$service->subtitle</td>
@@ -21,7 +20,18 @@ if($input->urlSegment1){
       $page->table = $table;
       $content = renderPage();
       break;
-    case 'map':
+    case 'ips':
+        $useMain = false;
+        $services = $pages->find("template=service");
+        $service_serial = array();
+
+        foreach($services as $service){
+              if(!validateMac($service->title)) continue;
+              $service_serial[] = array('mac' => strtolower(str_replace(":", "", $service->title)),
+                                'staticip' => strtoupper($service->static_ip));
+        }
+
+        echo serialize($service_serial);
       break;
     case 'add':
       if(!wire('user')->isLoggedin()){
@@ -34,16 +44,16 @@ if($input->urlSegment1){
         $user = wire('user')->name;
         $parent = $pages->get($page->id);
         $operator = wire('user')->id;
-        if($pages->get("template=staticip, title={$input->post->mac}") instanceof Nullpage){
+        if($pages->get("template=services, title={$input->post->mac}") instanceof Nullpage){
           // Creat IP
           do {
             $ip = long2ip(rand(ip2long("{$pages->get('template=site-setting')->start_ip}"), ip2long("{$pages->get('template=site-setting')->end_ip}")));
-          } while(!$pages->get("template=staticip, static_ip=$ip") instanceof NullPage);
+          } while(!$pages->get("template=services, static_ip=$ip") instanceof NullPage);
 
           // Add new if not exist
           $mac = strtoupper($input->post->mac);
-          $s = createPage('staticip', $parent, $mac);
-          $s->subtitle = $input->post->title;
+          $s = createPage('service', $parent, normalizeMac($mac));
+          $s->subtitle = $sanitizer->title($input->post->title);
           $s->operator = $operator;
           $s->static_ip = $ip;
           $s->save();
@@ -75,7 +85,7 @@ if($input->urlSegment1){
 
 } else {
   $userid = wire('user')->id;
-  $services = $pages->find("operator=$userid, template=staticip, sort=-subtitle");
+  $services = $pages->find("operator=$userid, template=service, sort=-subtitle");
   $table = '';
 
   foreach($services as $service){

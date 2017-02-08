@@ -102,7 +102,7 @@ if(!wire('user')->isLoggedin()){
           <li><a href="https://twitter.com/freifunkmyk"><i class="fa fa-2x fa-twitter-square"></i></a></li>
           <li><a href="https://github.com/FreifunkMYK"><i class="fa fa-2x fa-github-square"></i></a></li>
           <li><a href="https://www.youtube.com/channel/UC551zNU8hsG5mBRN5LUuqtg"><i class="fa fa-2x fa-youtube-square"></i></a></li>
-          <li><a mailto="info@freifunk-myk.de"><i class="fa fa-2x fa-envelope"></i></a></li>
+	  <li><a href="<?=$pages->get("/kontakt/")->url?>"><i class="fa fa-2x fa-envelope"></i></a></li>
         </ul>
         <p class="copywrite">&copy; <?=date("Y")?> <?=$homepage->headline?></p>
       </div>
@@ -114,7 +114,7 @@ if(!wire('user')->isLoggedin()){
           <li><a href="<?=$homepage->httpUrl?>">Home</a></li>
           <li><a href="<?=$pages->get("/blog/")->url?>">Blog</a></li>
           <li><a href="<?=$pages->get("/about/")->url?>">About</a></li>
-          <li><a href="<?=$pages->get("/faq/")->url?>">Faq</a></li>
+          <li><a href="https://wiki.freifunk-myk.de/wiki/faq">Faq</a></li>
           <li><a href="<?=$pages->get("/kontakt/")->url?>">Kontakt</a></li>
         </ul>
         <p class="copywrite">Erstellt mit <a href="http://de.processwire.com/">ProcessWire</a> und <a href="http://foundation.zurb.com/">Foundation Zurb</a>. Zu finden auf <a href="https://github.com/FreifunkMYK/PW-Freifunk-Starter">GitHub</a>.

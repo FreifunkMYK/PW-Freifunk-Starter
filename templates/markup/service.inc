@@ -5,11 +5,10 @@
       <th>Name</th>
       <td><?=$page->subtitle?></td>
       <?php if($page->createdUser == $user && $input->get->delete){ ?>
-        <div class="panel alert"> Bist du sicher das du diesen Node löschen möchtest? Dies kannst du nicht rückgängig machen.
+        <div class="alert-box alert"> Bist du sicher das du diesen Node löschen möchtest? Dies kannst du nicht rückgängig machen.
           <form action="./" method="post">
             <input type="checkbox" name="delete" value="node"> Ich möchte den Node <?=$page->get('subtitle|title')?> löschen.<br>
-            <button class="btn alert" type="submit" value="submit">Unwiederruflich Löschen</button>
-            <button class="btn secondary" type="cancle" value="cancle">Abbrechen</button>
+            <button class="btn secondary" type="submit" value="submit">Unwiederruflich Löschen</button>
           </form>
         </div>
       <?php } ?>

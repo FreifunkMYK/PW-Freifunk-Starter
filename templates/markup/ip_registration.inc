@@ -6,12 +6,12 @@
   <form class='omb_nodeAdd' data-abide action='./add' accept-charset='UTF-8' autocomplete='off' method='post'>
       <div class='row collapse'>
         <div class='small-6 columns'>
-          <input type='text' class='form-control' name='title' placeholder='Rechner Name'>
-          <small class='error'>Der Vorname ist ein Pflichtfeld.</small>
+          <input type='text' class='form-control' name='title' placeholder='Rechnername'>
+          <small class='error'>Der Rechnername ist ein Pflichtfeld.</small>
         </div>
         <div class='small-6 columns'>
-          <input type='text' class='form-control' required pattern='([0-9A-Za-z]{2}[:]){5}([0-9A-Z]{2})' name='mac' placeholder='Example: E8:DD:08:9C:X7:78'>
-          <small class='error'>Bitte beachte die Konvention! Nur Großbuchstaben inklusive :</small>
+          <input type='text' class='form-control' required pattern='([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})' name='mac' placeholder='Example: E8:DD:08:9C:57:78'>
+          <small class='error'>Bitte beachte die Konvention!</small>
         </div>
       </div>
 
