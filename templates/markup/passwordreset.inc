@@ -3,7 +3,7 @@
 
   <form action="./pwreset" id="form_2" method="post">
     <label for="firstname">Benutzer</label>
-    <input type="text" id="user" maxlength="30" value="<?=$username?>" name="user" readonly="readonly">
+    <input type="text" id="firstname" maxlength="30" value="<?=$username?>" name="user" readonly="readonly">
     <label for="newPw">Neues Passwort</label>
     <input type="password" id="newPw" name="newpw">
     <label for="repeatPw">Wiederhole Passwort</label>
