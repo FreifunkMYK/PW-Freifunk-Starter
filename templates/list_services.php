@@ -53,7 +53,7 @@ if($input->urlSegment1){
           // Add new if not exist
           $mac = strtoupper($input->post->mac);
           $s = createPage('service', $parent, normalizeMac($mac));
-          $s->subtitle = $input->post->title;
+          $s->subtitle = $sanitizer->title($input->post->title);
           $s->operator = $operator;
           $s->static_ip = $ip;
           $s->save();

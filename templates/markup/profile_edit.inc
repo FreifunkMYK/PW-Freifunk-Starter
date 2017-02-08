@@ -1,7 +1,7 @@
 <article id='article' class='medium-9 small-12 columns'>
   <h1>Profil <?=$page->title?></h1>
 
-  <form action="senden.html" id="form_2">
+  <form action="senden.html" id="form_2" method="post">
     <label id="h2" form="form_2">Einstellungen</label>
     <label for="firstname">Vorname</label>
     <input type="text" id="firstname" maxlength="30" value="<?=$firstname?>">
