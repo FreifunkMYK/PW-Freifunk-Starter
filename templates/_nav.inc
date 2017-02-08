@@ -38,11 +38,12 @@ function isActive(Page $page, Page $nav){
       <li <?php echo (isActive($page, $pages->get("/blog/")) ? "class='active'" : ""); ?> >
         <a href="<?=$pages->get("/blog/")->url?>">Blog</a>
       </li>
-      <li><a href="http://wiki.freifunk-myk.de">Wiki</a></li>
+      <li><a href="https://wiki.freifunk-myk.de">Wiki</a></li>
       <li <?php echo (isActive($page, $pages->get("/router/")) ? "class='active'" : "class=''"); ?>>
         <a href="<?=$pages->get("/router/")->url?>">Router</a>
       </li>
-      <li><a href="http://status.freifunk-myk.de">Karte</a></li>
+      <li><a href="https://status.freifunk-myk.de">Karte</a></li>
+      <li><a href="https://wiki.freifunk-myk.de/wiki/anleitung">Anleitungen</a></li>
       <li class="has-dropdown">
         <?php if(!wire('user')->isLoggedin()){ ?>
           <a href="#" data-dropdown="signin">Anmelden</a>
@@ -56,7 +57,7 @@ function isActive(Page $page, Page $nav){
               <a href="<?= $pages->get("/node/")->httpURL ?>"><i class='fa fa-wifi'></i> Nodes</a>
             </li>
             <li>
-              <a href="<?= $pages->get('/static-ip/')->httpURL ?>"><i class='fa fa-server'></i> Statische IPs</a>
+              <a href="<?= $pages->get('/services/')->httpURL ?>"><i class='fa fa-server'></i> Services</a>
             </li>
             <?php if(wire('user')->hasPermission('page-create')) { ?>
               <li>

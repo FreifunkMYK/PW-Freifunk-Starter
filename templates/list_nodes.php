@@ -107,26 +107,32 @@ if($input->urlSegment1){
         if(isset($input->get->key)) $session->key = strtoupper($sanitizer->text($input->get->key));
         $content = renderPage('node_registration');
       } else {
-        //  Register Node
-        $content = registerNode($input->post->mac, $input->post->key);
-        $content = "<h2>Node Hinzugefügt</h2><ul>$content</ul>";
+        // Validate Mac Address
+        if(validateMac($input->post->mac)){
+          //  Register Node
+          $content = registerNode($input->post->mac, $input->post->key);
+          $content = "<h2>Node Hinzugefügt</h2><ul>$content</ul>";
+        } else {
+          $content = "<h2>Falsche Mac</h2>";
+        }
       }
       break;
       case 'keys':
           //if(!autorized($input->secret)) throw new Wire404Exception();
           $useMain = false;
-          $nodes = $pages->find("template=node, key!=''");
-          $router_new = array();
-          $router = array();
+          // Find all nodes and store the MAC and PublicKey to an array
+          $router_new = $pages->find("template=node, key!=''")->explode(function($item) {
+                          return array(
+                            'MAC' => $item->title,
+                            'PublicKey' => strtoupper($item->key)
+                          );
+                        });
+          // get and merge the old and new keylist
           $router_old = file_get_contents("http://register.freifunk-myk.de/srvapi.php");
           $router_old = unserialize($router_old);
-
-          foreach($nodes as $node){
-                $router_new[] = array('MAC' => "$node->title",
-                                  'PublicKey' => strtoupper($node->key));
-          }
-
           $list = array_merge($router_old, $router_new);
+          // create the output
+          $router = array();
           $router = array_map("unserialize", array_unique(array_map("serialize", $list)));
 
           echo serialize($router);
@@ -162,6 +168,62 @@ if($input->urlSegment1){
           $update = $modules->get('ffNodeInfo');
           $update->set_nodeinfo(new HookEvent);
           echo "Node Info Updated";
+        break;
+        case 'move':
+          function moveNodes($from, $to, $search, $do = false){
+            $error = "";
+            $return = "";
+            // wenn es den Nutzer from nicht gibt
+            if(!wire('users')->get("name|id=$from")) $error .= "Nutzer $from nicht vorhanden!<br>";
+            // wenn es das Ziel nicht gibt
+            if(!wire('users')->get("name|id=$to")) $error .= "Ziehl $to nicht vorhanden!<br>";
+            // wenn es errors gibt dann return!
+            if(!empty($error)) return $error;
+            $from = wire('users')->get("name|id=$from");
+            $to = wire('users')->get("name|id=$to");
+
+            $moveNodes = wire('pages')->find("template=node, operator=$from->name, $search, sort=subtitle");
+
+            // first check if the right Nodes are choosed
+            $return .= "<h2>Folgende Nodes werden zu $to->name (ID: $to->id) übertragen:</h2>";
+            foreach($moveNodes as $node){
+              $return .= "$node->subtitle - $node->title - {$node->operator->name} <br>";
+            }
+
+            // confirm to move nodes
+            if($do){
+              $return .= "<br> Übertragung zu $to->name <br>";
+              foreach ($moveNodes as $node) {
+                $node->of(false);
+                $node->operator = $to->id;
+                $node->save();
+                $node->of(true);
+                $return .= "$node->subtitle gehört nun zu {$node->operator->name}<br>";
+              }
+              return "$return <p>Die Nodes sind erfolgreich Übretragen.</p>";
+            }
+
+            return "$return <p>Wenn diese Auflistung korrekt ist hänge ein \"&do=true\" an die URL.</p>";
+          }
+
+          $from = $sanitizer->name($input->get->from);
+          $to = $sanitizer->name($input->get->to);
+          $title = ( isset($input->get->title) ? $sanitizer->text($input->get->title) : "");
+          $mac = ( isset($input->get->mac) ? $sanitizer->text($input->get->mac) : "");
+          //$useMain = false;
+
+          if(!wire('user')->isLoggedin() && !wire('user')->hasRole('manager|superuser')){
+            $content = "Du hast nicht die notwendigen rechte!";
+          } else {
+            $filter = "";
+            if(!empty($title)) $filter .= "subtitle*=$title";
+            if(!empty($mac)) $filter .= (empty($filter) ? "mac=$mac" : ", mac=$mac");
+            $content = moveNodes($from, $to, $filter);
+            if($sanitizer->text($input->get->do) == "true") {
+              $content = moveNodes($from, $to, $filter, true);
+            }
+          }
+
         break;
     default:
       throw new Wire404Exception();

@@ -1,0 +1,336 @@
+<?php
+
+
+class ProcessAccessOverview extends Process implements ConfigurableModule {
+
+	/**
+	 * Return information about this module (required)
+	 *
+	 */
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Access Overview', 
+			'summary' => 'Overview over the access management of all templates of a site.', 
+			'version' => 10, 
+			'author' => 'Benjamin Milde', 
+			'icon' => 'sitemap', 
+			); 
+	}
+
+	const pageName = 'accessoverview';
+	const devider = " &rarr; ";
+
+	public function init() {
+		parent::init(); // required
+
+		$this->modules->get('JqueryWireTabs');
+	}
+
+	protected function searchForParentTemplates($template, $branchChildren = array()){
+		$branchChildren[] = $template->id;
+
+		// Found distinct parent
+		if($template->useRoles){
+			return array($template->get("label|name") => $template->id);
+
+		// No parent but branches left
+		}else if(count($template->parentTemplates)){
+			$recursion = array();
+			foreach($template->parentTemplates as $parent){
+
+				if(!in_array($parent, $branchChildren)){
+					$returnValue = $this->searchForParentTemplates($this->templates->get($parent), $branchChildren);
+				}else{
+					//Loop detected - Dead End;
+					$returnValue = array($parent);
+				}
+
+				// transfer dead end up
+				if(array_key_exists(0, $returnValue)){
+					if(is_array($recursion) && array_key_exists(0, $recursion)){
+						array_push($recursion[0], $returnValue[0]);
+					}else{
+						$recursion[0] = $returnValue;
+					}
+
+				}
+
+				// transfer rest up
+				if( count(array_keys($returnValue)) || ( count(array_keys($returnValue)) > 1 && array_key_exists(0, $returnValue) )){
+					// Concat keys to branchpaths
+					$keys = array_keys($returnValue);
+					$current = $template->get("label|name");
+					foreach($keys as $key){
+						if($key === 0) continue;
+						$recursion[$key.self::devider.$current] = $returnValue[$key];
+					}
+
+				}
+			}
+
+			return $recursion;
+
+		// Dead end
+		}else{
+			return array($template->id);
+
+		}
+	}
+
+	protected function getRowData($template, $roles, $label, $title = false){
+		$activeRoles = array(
+			"View Pages" => $template->roles->explode("id"),
+			"Edit Pages" => $template->editRoles,
+			"Add Children" => $template->addRoles,
+			"Create Pages" => $template->createRoles
+		);
+
+		$data = array();
+		foreach($roles as $role){
+			if($role->name == "superuser"){
+				$data[] = "<i class='fa fa-check state-green' title='A superuser can access everything'></i>";
+			}else if( in_array($role->id, $activeRoles[$label])){
+				$data[] = "<i class='fa fa-check state-green'".($title ? " title='$title'" : "")."></i>";
+			}else if( in_array($this->roles->getGuestRole()->id, $activeRoles[$label])){
+				$data[] = "<i class='fa fa-check state-green' title='Inherited from guest role.".($title ? " $title" : "")."'></i>";
+			}else{
+				$data[] = "<i class='fa fa-times state-red'".($title ? " title='$title'" : "")."></i>";
+			}
+		}
+
+		return $data;
+	}
+
+	protected function ___getDescription(){
+		$table = "<table class='descriptionTable'>";
+		$data = array(
+			array("Can't find a template?", "This module does list all templates, but maybe not in a single tab. The first four tabs persent templates which do grant or inherit access rules. The last tab shows all templates, which can be put in places where their access rights can't be predetermined by the module. This differentiation is not fully exclusive, therefore templates can be part of all five tabs if they inherit from templates with and without fixed access rights."),
+			array("Inherited", "Access is inherited via a fixed tree of allowed parent templates, but the template can be used as child of other templates. See 'Free Inherited Access'."),
+			array("Inherited *", "Access is inherited via a fixed tree of allowed parent templates. The template can not be used as child of other templates.")
+		);
+
+		foreach($data as $tr){
+			$table .= "<tr>";
+			foreach($tr as $td){
+				$table .= "<td>";
+				$table .= $td;
+				$table .= "</td>";
+			}
+			$table .= "</tr>";
+		}
+		$table .= "</table>";
+
+		return $table;
+	}
+
+	public function ___execute() {
+
+		if(!count($this->usedRoles)){
+			$text = "To use this Module you first need to setup some roles to be shown here. ";
+			$text .= "This can be done here: <a href='".wire('config')->urls->admin."module/edit?name=".$this->className()."'>Settings</a>";
+			return $text;
+		}
+
+		$roles = $this->usedRoles;
+		$parTemps = array();
+		$templates = new WireArray();
+
+		foreach($this->templates->getAll() as $key => $template)
+			if($this->showSystem || $template->flags ^ Template::flagSystem)
+				$templates->add($template);
+
+		foreach($templates as $template){
+			if($template->useRoles) continue;
+			$parentTemplates = $this->searchForParentTemplates($template);
+			if(array_key_exists(0, $parentTemplates) && count($parentTemplates) > 1 || !array_key_exists(0, $parentTemplates)){
+				$parTemps[$template->id] = $parentTemplates;
+			}
+		}
+
+		$names = array();
+
+		foreach($roles as $key => $role){
+			$roles[$key] = $this->roles->get($role);
+			$names[] = $role;
+		}
+
+		$tables = array( 
+			"View Pages" => "User can view pages of this template.", 
+			"Edit Pages" => "User can edit pages of this template.", 
+			"Create Pages" => "User can create pages of this template.",
+			"Add Children" => "User can add children to pages of this template.",
+			);
+
+		$form = $this->modules->get("InputfieldForm");
+		$form->attr('id', 'ProcessRolesOverviewForm');
+
+		foreach($tables as $label => $desc){
+
+			$table = $this->wire('modules')->get('MarkupAdminDataTable');
+			$table->setSortable(true);
+			$table->setEncodeEntities(false);
+			$table->headerRow(array_merge(["template"], $names));
+
+			foreach($templates as $template){
+				if(!$template->useRoles && !array_key_exists($template->id, $parTemps)) continue;
+
+			$edit_url = wire('config')->urls->admin."setup/template/edit?id=".$template->id;
+
+				if(!$template->useRoles && array_key_exists($template->id, $parTemps)){
+					$concatData = array();
+
+					foreach($parTemps[$template->id] as $path => $id){
+						if($path === 0) continue;
+						$parent = $this->templates->get($id);
+
+						//$path = substr($path, 0, strrpos($path, self::devider));
+						
+						$data = $this->getRowData($parent, $roles, $label, $path);
+
+						foreach ($data as $key => $value) {
+							$text = $value;
+							if($this->showPaths && $roles[$key]->name !== "superuser" && strpos($text, "state-red") === false)
+								$text .= " <span class='muted'>".$path."</span>";
+							if(array_key_exists($key, $concatData)) $concatData[$key] .= "<br>".$text;
+							else $concatData[$key] = $text;
+						}
+					}
+
+					$title = "Access is inherited via a fixed tree of allowed parent templates.";
+					$star = "";
+
+					if(!array_key_exists(0, $parTemps[$template->id])){
+						$title .= " Template can not be used as child of other templates.";
+						$star = " *";
+					}else{
+						$title .= " Template can be used as child of other templates.";
+					}
+
+					$inherited = "<span class='muted' title='$title'>Inherited$star</span>";
+
+					$table->row(array_merge([$template->get("label|name")." ".$inherited => $edit_url], $concatData ));
+
+
+					continue;
+				}
+
+				$data = $this->getRowData($template, $roles, $label);
+				$table->row(array_merge([$template->get("label|name") => $edit_url], $data ));
+			}
+
+			$markup = $this->modules->get("InputfieldMarkup");
+			$markup->markupText = $table->render();
+			$keyTable = $this->modules->get("InputfieldMarkup");
+			$keyTable->markupText = "<div class='muted'>".$this->getDescription()."</div>";
+
+			$fieldset = new InputfieldWrapper();
+			$fieldset->attr('class', 'WireTab');
+			$fieldset->attr('title', $label);
+			$fieldset->description = $desc; 
+			$fieldset->append($markup);
+			$fieldset->append($keyTable);
+			$form->append($fieldset);
+
+		}
+
+		$table = $this->wire('modules')->get('MarkupAdminDataTable');
+		$table->setSortable(false);
+		$table->setEncodeEntities(false);
+		$table->headerRow(array_merge(["template"], $names));
+
+		foreach($templates as $template){
+			if($template->useRoles) continue;
+
+			if(array_key_exists($template->id, $parTemps) && !array_key_exists(0, $parTemps[$template->id])) continue;
+
+			$superuserOrNot = array();
+			foreach($names as $role) {
+				if($role == "superuser") $superuserOrNot[] = "<i class='fa fa-check state-green' title='A superuser can access everything'></i>";
+				else $superuserOrNot[] = "<i class='fa fa-question' title='Dependent on parent'></i>";
+			}
+
+			$edit_url = wire('config')->urls->admin."setup/template/edit?id=".$template->id;
+			$table->row(array_merge(array($template->get("label|name") => $edit_url), $superuserOrNot));
+		}
+
+		$markup = $this->modules->get("InputfieldMarkup");
+		$markup->markupText = $table->render();
+
+		$fieldset = new InputfieldWrapper();
+		$fieldset->attr('class', 'WireTab');
+		$fieldset->attr('title', 'Free Inherited Access'); 
+		$fieldset->description = "Access is inherited from the parent page's template."; 
+		$fieldset->append($markup);
+		$form->append($fieldset);
+
+		return $form->render();
+	}	
+
+	public function ___install() {
+		$page = new Page();
+		$page->template = 'admin';
+		$page->name = self::pageName; 
+
+		$page->parent = $this->pages->get($this->config->adminRootPageID)->child('name=setup');
+		$page->process = $this; 
+
+		$info = self::getModuleInfo();
+		$page->title = $info['title'];
+		$page->save();
+
+		$this->message("Created Page: {$page->path}"); 
+	}
+
+	public function ___uninstall() {
+		$moduleID = $this->modules->getModuleID($this); 
+		$page = $this->pages->get("template=admin, process=$moduleID, name=" . self::pageName); 
+
+		if($page->id) {
+			$this->message("Deleting Page: {$page->path}"); 
+			$page->delete();
+		}
+	}
+
+	static public function getModuleConfigInputfields(array $data) {
+
+		$usedRoles = isset($data['usedRoles']) ? $data['usedRoles'] : array();
+		$showSystem = isset($data['showSystem']) ? $data['showSystem'] : 0;
+		$showPaths = isset($data['showPaths']) ? $data['showPaths'] : 0;
+		$roles = wire('roles'); 
+
+		$inputfields = new InputfieldWrapper();
+
+		$f = wire('modules')->get('InputfieldAsmSelect');
+		$f->label = __("What roles populate the table?");
+		$f->columnWidth = 34;
+		$f->attr('id+name', 'usedRoles');
+		foreach($roles as $role) {
+			$f->addOption($role->name); 
+		}
+		$f->attr('value', $usedRoles);
+		$inputfields->add($f);
+
+		$f2 = wire('modules')->get('InputfieldCheckbox');
+		$f2->label = __("Should system templates be shown?");
+		$f2->label2 = __("Activate");
+		$f2->skipLabel = Inputfield::skipLabelFor;
+		$f2->columnWidth = 33;
+		$f2->attr('id+name', 'showSystem');
+		$f2->attr('value', $showSystem);
+		if($showSystem) $f2->attr('checked', "checked");
+		$inputfields->add($f2);
+
+		$f2 = wire('modules')->get('InputfieldCheckbox');
+		$f2->label = __("Show paths for inherited access?");
+		$f2->label2 = __("Activate");
+		$f2->skipLabel = Inputfield::skipLabelFor;
+		$f2->columnWidth = 33;
+		$f2->attr('id+name', 'showPaths');
+		$f2->attr('value', $showPaths);
+		if($showPaths) $f2->attr('checked', "checked");
+		$inputfields->add($f2);
+
+		return $inputfields;
+	}
+	
+}
