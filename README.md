@@ -1,2 +1,2 @@
 # Processwire
-Manage Freifunk Community with Processwire
+Dies ist der aktuelle entwicklungsstand der Webseite
