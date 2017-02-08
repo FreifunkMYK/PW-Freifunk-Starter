@@ -135,7 +135,7 @@
                   <!-- TODO: Link (wie komme ich an den account?) -->
                 </li>
                 <li>
-                  Gehe wie im <a href='../howto'>HowTo</a> beschrieben vor, um die Firmware zu flashen und zu konfigurieren.
+                  Gehe wie im <a href='https://wiki.freifunk-myk.de/wiki/mitmachen'>HowTo</a> beschrieben vor, um die Firmware zu flashen und zu konfigurieren.
                 </li>
                 <li>Stelle den Router an einem geeigneten Ort auf (z.B. Fensterbank).</li>
               </ul>

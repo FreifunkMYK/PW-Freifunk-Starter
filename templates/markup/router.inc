@@ -31,6 +31,10 @@
                     <?php } ?><br/>
         OpenWrt: <a href="https://wiki.openwrt.org/toh/<?=strtolower($page->parent->title)?>/<?=strtolower($page->title)?>"><?=$page->title?></a><br />
         <hr>
+        <h4>Hardware</h4>
+        <?=($page->ram ? "RAM: {$page->ram} <br/>" : "")?>
+        <?=($page->flash ? "Flash: {$page->flash} <br />" : "")?>
+        <hr>
         <h4>Features</h4>
         <ul class='features'>
           <?php echo getTag($page->features); ?>

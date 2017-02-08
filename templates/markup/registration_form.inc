@@ -14,15 +14,13 @@
 
         <div class='row collapse'>
           <div class='small-1 columns'>
-            <span class='prefix'><i class='fa fa-user'></i> *</span>
+            <span class='prefix'><i class='fa fa-user'></i></span>
           </div>
           <div class='small-12 medium-5 columns'>
-            <input type='text' class='form-control' name='firstname' required placeholder='Vorname' <?php if($session->get('firstname')) echo "value='{$session->get('firstname')}'"; ?>>
-            <small class='error'>Der Vorname ist ein Pflichtfeld.</small>
+            <input type='text' class='form-control' name='firstname' placeholder='Vorname' <?php if($session->get('firstname')) echo "value='{$session->get('firstname')}'"; ?>>
           </div>
           <div class='small-12 medium-6 columns'>
-            <input type='text' class='form-control' name='lastname' required placeholder='Nachname' <?php if($session->get('lastname')) echo "value='{$session->get('lastname')}'"; ?>>
-            <small class='error'>Der Nachname ist ein Pflichtfeld.</small>
+            <input type='text' class='form-control' name='lastname' placeholder='Nachname' <?php if($session->get('lastname')) echo "value='{$session->get('lastname')}'"; ?>>
           </div>
         </div>
 

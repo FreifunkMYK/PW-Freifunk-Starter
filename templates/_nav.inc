@@ -42,7 +42,7 @@ function isActive(Page $page, Page $nav){
       <li <?php echo (isActive($page, $pages->get("/router/")) ? "class='active'" : "class=''"); ?>>
         <a href="<?=$pages->get("/router/")->url?>">Router</a>
       </li>
-      <li><a href="http://status.freifunk-myk.de">Karte</a></li>
+      <li><a href="http://map.freifunk-myk.de">Karte</a></li>
       <li class="has-dropdown">
         <?php if(!wire('user')->isLoggedin()){ ?>
           <a href="#" data-dropdown="signin">Anmelden</a>
@@ -56,7 +56,7 @@ function isActive(Page $page, Page $nav){
               <a href="<?= $pages->get("/node/")->httpURL ?>"><i class='fa fa-wifi'></i> Nodes</a>
             </li>
             <li>
-              <a href="<?= $pages->get('/static-ip/')->httpURL ?>"><i class='fa fa-server'></i> Statische IPs</a>
+              <a href="<?= $pages->get('/services/')->httpURL ?>"><i class='fa fa-server'></i> Services</a>
             </li>
             <?php if(wire('user')->hasPermission('page-create')) { ?>
               <li>

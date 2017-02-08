@@ -11,7 +11,7 @@
         </div>
         <div class='small-6 columns'>
           <input type='text' class='form-control' required pattern='([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})' name='mac' placeholder='Example: E8:DD:08:9C:57:78'>
-          <small class='error'>Bitte beachte die Konvention! Nur Großbuchstaben inklusive :</small>
+          <small class='error'>Bitte beachte die Konvention!</small>
         </div>
       </div>
 
