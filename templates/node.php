@@ -5,6 +5,9 @@ $config->scripts->add($config->urls->templates.'js/leaflet-src.js');
 $latitude = str_replace(',','.',$page->latitude);
 $longitude = str_replace(',','.',$page->longitude);
 
+/**
+ * Nodes aus der nähe anzeigen
+ */
 $nearnodes = umkreissuche("node", $page->latitude, $page->longitude, 5);
 
 $marker = '';
@@ -37,3 +40,7 @@ $script = "<script>
 
 $page->losttime = time_elapsed_string($page->getUnformatted('lastseen'));
 $content = renderPage();
+if($input->post->delete && !$input->post->cancle){
+  deleteNode($node);
+  $content = "Der Node wurde erfolgreich gelöscht. <a href='{$pages->get('/node/')->httpUrl}'>Zurück</a>";
+}

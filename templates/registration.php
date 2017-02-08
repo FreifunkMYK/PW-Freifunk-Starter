@@ -14,8 +14,8 @@ if($input->post->submit) {
         $nuser["username"] = $sanitizer->username($input->post->username);
         $nuser["email"] = $sanitizer->email($input->post->email);
         $nuser["password"] = $sanitizer->text($input->post->password);
-        $nuser["firstname"] = $sanitizer->text($input->post->firstname);
-        $nuser["lastname"] = $sanitizer->text($input->post->lastname);
+        $nuser["firstname"] = ($input->post->firstname ? $sanitizer->text($input->post->firstname) : "NULL");
+        $nuser["lastname"] = ($input->post->lastname ? $sanitizer->text($input->post->lastname) : "NULL");
 
         $content .= registerUser($nuser);
 

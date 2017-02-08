@@ -113,8 +113,8 @@ class mailNotification extends WireData implements Module, ConfigurableModule {
       // if this post wasn't made by an "user" don't continue
       if($page->createdUser->hasRole('admin|manager')) return;
 
-      $subject = sprintf(__('%s has deleted by %s'), $page->get('headline|title'), $page->createdUser->get('name|title'));
-      $message = sprintf(__("%s deleted by %s \n========================= \n\nYou can find it in the bin and restore it."), $page->get('headline|title'), $page->createdUser->get('name|title'));
+      $subject = sprintf(__('%s has deleted by %s'), $page->get('headline|title'), $user->get('title'));
+      $message = sprintf(__("%s deleted by %s \n========================= \n\nYou can find it in the bin and restore it."), $page->get('headline|title'), $user->get('name|title'));
 
       $this->sendMail($subject, $message);
       // Message to User
@@ -124,7 +124,7 @@ class mailNotification extends WireData implements Module, ConfigurableModule {
     public function notificationChange(Page $page){
       $template = $page->template;
       $templates = $this->notificationDelete;
-
+      $user = wire('user');
       // Überprüfen ob die Seite geändert wurde
       if(!$page->isChanged()) return;
 
@@ -137,8 +137,8 @@ class mailNotification extends WireData implements Module, ConfigurableModule {
       // if this post wasn't made by an "user" don't continue
       if($page->createdUser->hasRole('admin|manager')) return;
 
-      $subject = sprintf(__('%s has changed by %s'), $page->get('headline|title'), $page->createdUser->get('name|title'));
-      $message = sprintf(__("%s has changed by %s \n========================= \n\nYou can look for the changes at:\n %s"), $page->get('headline|title'), $page->createdUser->get('name|title'), $page->httpUrl);
+      $subject = sprintf(__('%s has changed by %s'), $page->get('headline|title'), $user->get('name|title'));
+      $message = sprintf(__("%s has changed by %s \n========================= \n\nYou can look for the changes at:\n %s"), $page->get('headline|title'), $user->get('name|title'), $page->httpUrl);
 
       $this->sendMail($subject, $message);
       // Message to User
