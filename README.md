@@ -1,2 +1,2 @@
 # Processwire
-Dies ist der aktuelle entwicklungsstand der Webseite
+Dies ist der aktuelle Entwicklungsstand der Webseite
