@@ -79,7 +79,7 @@ class ffNodeInfo extends WireData implements Module, ConfigurableModule{
     }
 
     public function get_address($latitude, $longitude){
-      if(empty($latitude)) return "";
+      /*if(empty($latitude)) return "";
       $osm = json_decode(file_get_contents("https://nominatim.openstreetmap.org/reverse?format=json&lat={$latitude}&lon={$longitude}&zoom=16&addressdetails=1&email=info@freifunk-myk.de"));
       if(isset($osm->address->city)) {
         $address = $osm->address->city;
@@ -95,8 +95,8 @@ class ffNodeInfo extends WireData implements Module, ConfigurableModule{
       }
       if(isset($osm->address->road) && isset($address)){
         $address .= ", ".$osm->address->road;
-      }
-      return $address;
+      }*/
+      return "not working at the moment!";
     }
 
     public function get_nodeinfo($mac) {
