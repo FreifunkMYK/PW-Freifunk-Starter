@@ -1,6 +1,6 @@
 <?php
 
-if($input->urlSegment2) throw new Wire404Exception();
+if($input->urlSegment2) throw new Wire404Exception(); // urlSegment2 existiert nicht 404!
 
 if($input->urlSegment1){
   switch($input->urlSegment1){
@@ -80,7 +80,7 @@ if($input->urlSegment1){
       }
       break;
     default:
-      throw new Wire404Exception();
+      throw new Wire404Exception(); // alle anderen Segmente existieren nicht = 404!
   }
 
 } else {

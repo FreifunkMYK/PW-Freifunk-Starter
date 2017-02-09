@@ -5,17 +5,23 @@ include_once('scripts/node_migration.php');
 $e = new HookEvent;
 $ffinfo->set_nodeinfo($e);*/
 
-if($input->urlSegment2) throw new Wire404Exception();
+if($input->urlSegment2) throw new Wire404Exception(); // sobald mehr als ein urlSegment eingegeben wird 404!
 
 if($input->urlSegment1){
   switch($input->urlSegment1){
+    /**
+     * list gibt eine Liste aller Nodes aus.
+     */
     case 'list':
+      // Finde und speichere alle Nodes sortiert nach dem subtitle
       $nodes = $pages->find('template=node, sort=-subtitle');
-      $table = '';
 
+      // Init variable $tablerow for the Node Table.
+      $tablerow = '';
+
+      // Save each Node in a Row of the table
       foreach($nodes as $node){
-
-        $table .="<tr class='".($node->online == 1 ? "alert success" : "alert danger")."'>
+        $tablerow .="<tr class='".($node->online == 1 ? "alert success" : "alert danger")."'>
                   <td><a href='$node->httpUrl'>$node->subtitle</a></td>
                   <td>$node->title</td>
                   <td>$node->latitude</td>
@@ -25,9 +31,17 @@ if($input->urlSegment1){
                 </tr>";
       }
 
-      $page->table = $table;
+      // Save the tablerow to the page Variable table.
+      $page->table = $tablerow;
+
+      // renderPage markup/list_node.inc
       $content = renderPage();
       break;
+    /**
+     * map shows a map from all nodes
+     *
+     * Aktuell außer Funktion!
+     */
     case 'map':
       // Site settings
       $config->styles->add($config->urls->templates.'css/leaflet.css');
@@ -95,28 +109,48 @@ if($input->urlSegment1){
                 </script>";
 
       break;
+    /**
+     * add Nodes
+     *
+     * input:
+     * 		mac  string  Macadresse eines Nodes
+     * 		key  string  Key des Nodes
+     */
     case 'add':
-      // Check if user is logged in and save the input->get in the session variable.
-      if(!wire('user')->isLoggedin()){
-        $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
-        $session->redirectUrl = $page->path."add/";
-        if(isset($input->get->mac)) $session->mac = strtoupper($sanitizer->text($input->get->mac));
-        if(isset($input->get->key)) $session->key = strtoupper($sanitizer->text($input->get->key));
-      } elseif(!$input->post->submit) {
-        if(isset($input->get->mac)) $session->mac = strtoupper($sanitizer->text($input->get->mac));
-        if(isset($input->get->key)) $session->key = strtoupper($sanitizer->text($input->get->key));
+      // First save the Mac and Key to the Session Cockie
+      if(isset($input->get->mac)) $session->mac = strtoupper($sanitizer->text($input->get->mac));
+      if(isset($input->get->key)) $session->key = strtoupper($sanitizer->text($input->get->key));
+
+      // Check if user is logged in.
+      if(wire('user')->isLoggedin()){
+        // Node Registration Form
         $content = renderPage('node_registration');
-      } else {
-        // Validate Mac Address
-        if(validateMac($input->post->mac)){
-          //  Register Node
-          $content = registerNode($input->post->mac, $input->post->key);
-          $content = "<h2>Node Hinzugefügt</h2><ul>$content</ul>";
-        } else {
-          $content = "<h2>Falsche Mac</h2>";
+
+        // If Form submitted
+        if($input->post->submit){
+          // Check tha Macadresse
+          if(validateMac($input->post->mac)){
+            //  Register Node
+            $content = registerNode($input->post->mac, $input->post->key);
+            $content = "<h2>Node Hinzugefügt</h2><ul>$content</ul>";
+          } else {
+            $content = "<h2>Falsche Macadresse!</h2>";
+          }
         }
+      } else {
+        // Verweise auf Anmeldung/Registrierung wenn Nutzer nicht eingeloggt.
+        // Hier soll später direkt das Anmelde/Registrierungs Formular eingeblendet werden.
+        $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
+
+        // Speichere die RedirectUrl um nach der Registrierung/Anmeldung wieder hier zu landen.
+        $session->redirectUrl = $page->path;
       }
       break;
+      /**
+       * keys
+       *
+       * Serialisierte Ausgabe der Keys von registrierten Nodes
+       */
       case 'keys':
           //if(!autorized($input->secret)) throw new Wire404Exception();
           $useMain = false;
@@ -137,6 +171,11 @@ if($input->urlSegment1){
 
           echo serialize($router);
         break;
+        /**
+         * import
+         *
+         * nur zur Migration der alten Node Datenbank. Kann gelöscht werden wenn alle Nodes migriert wurden.
+         */
         case 'import':
           if(!wire('user')->isLoggedin()){
             $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
@@ -162,13 +201,26 @@ if($input->urlSegment1){
             $content = "<h2>Nodes Hinzufügen</h2><ul>$content</ul>";
           }
         break;
+        /**
+         * update
+         *
+         * führt die Aktuallisierung der Node Daten aus dem Node JSON aus.
+         *
+         * Benötigt: Module ffNodeInfo
+         */
         case 'update':
-          if($input->get->key != "nre7u97ea") throw new Wire404Exception;
+          if($input->get->key != "nre7u97ea") throw new WirePermissionException; // Without or with wrong key no Excption
           $useMain = false;
           $update = $modules->get('ffNodeInfo');
           $update->set_nodeinfo(new HookEvent);
           echo "Node Info Updated";
         break;
+        /**
+         * move
+         *
+         * Erste Version zum verschieben von Nodes von einem zum anderem Account.
+         * Später auslagern in das Node module.
+         */
         case 'move':
           function moveNodes($from, $to, $search, $do = false){
             $error = "";
@@ -226,6 +278,7 @@ if($input->urlSegment1){
 
         break;
     default:
+      // Alle nicht vorhandenen Segmente führen zu einem 404!
       throw new Wire404Exception();
   }
 
