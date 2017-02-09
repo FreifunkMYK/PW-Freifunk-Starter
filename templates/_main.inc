@@ -101,6 +101,7 @@ if(!wire('user')->isLoggedin()){
         <ul class="inline-list social">
           <li><a href="https://twitter.com/freifunkmyk"><i class="fa fa-2x fa-twitter-square"></i></a></li>
           <li><a href="https://github.com/FreifunkMYK"><i class="fa fa-2x fa-github-square"></i></a></li>
+          <li><a href="https://www.youtube.com/channel/UC551zNU8hsG5mBRN5LUuqtg"><i class="fa fa-2x fa-youtube-square"></i></a></li>
 	  <li><a href="<?=$pages->get("/kontakt/")->url?>"><i class="fa fa-2x fa-envelope"></i></a></li>
         </ul>
         <p class="copywrite">&copy; <?=date("Y")?> <?=$homepage->headline?></p>
