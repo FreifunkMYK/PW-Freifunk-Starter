@@ -21,16 +21,17 @@ if($input->post->submit || $input->get->submit){
 
   // Wenn ein neues Password gesetzt wurde
   if($input->post->newpw){
-    $username = $sanitizer->name($input->post->user);
     $ldap = wire('modules')->get("ldapHelper");
-    $ldapuser['username'] = $username;
-    $ldapuser['newPassword'] = $sanitizer->text($input->post->newpw);
-    if($ldap->save($ldapuser)){
+
+    $username = $sanitizer->name($input->post->user);
+    $change['newpassword'] = $sanitizer->text($input->post->newpw);
+
+    if($ldap->modifyUser($username, $change)){
       $content = "Password gespeichert, du kannst dich nun einloggen.";
       $u = wire('users')->get("name=$username");
       $u->authkey = "";
     } else {
-      $content = "Es ist ein fehler aufgetreten, versuche es zu einem Späteren Zeitpunkt noch einmal!";
+      $content = "{$input->post->user}: Es ist ein fehler aufgetreten, versuche es zu einem Späteren Zeitpunkt noch einmal!";
     }
   }
 

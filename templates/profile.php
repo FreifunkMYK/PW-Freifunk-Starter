@@ -33,7 +33,7 @@ function makeTable(PageArray $pages, $tableArray, $status = false){
 }
 
 if($input->urlSegment1 == "pwreset") {
-  //if(wire('user')->isLoggedin()) throw new Wire404Exception();
+  //if(wire('user')->isLoggedin()) throw new WirePermissionException();
   include_once('passwordreset.php');
 }
 
