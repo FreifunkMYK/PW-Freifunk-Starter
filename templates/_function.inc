@@ -422,31 +422,27 @@ function createPage($template, $parent, $title){
  *
  * @param string $mac     the MAC Address from the Node
  * @param string $key     the Node PublicKey for the VPN connection_status
- * @return string         the Output String to Display the Information of register Node
+ * @return int            -1 = Existiert bereits; 0 = Fehler; 1 = true; 2 = aktualisiert
  */
 function registerNode($mac, $key){
-  if(empty($mac) || empty($key)) return false;
-
-  // Normalize Mac Address
-  $mac = normalizeMac($mac);
+  if(empty($mac) || empty($key)) return 0;
+  // Definiere Systemvariablen
   $page = wire('page');
   $node = wire('pages')->get("template=node, title=$mac");
   $parent = wire('pages')->get($page->id);
   $operator = wire('user')->id;
-
-  // If node exist?
+  // Existiert der Node bereits?
   if($node instanceof Nullpage){
     $titlemac = strtoupper($mac);
     $n = createPage('node', $parent, $titlemac);
-    $title = "Hinzugefügt";
-    // Owner is not current User
+    $fehlercode = 1;
   } elseif($node->operator->id != $operator) {
-    $content = "<li>Der Node mit der MAC Adresse: $mac ist bereits registriert.</li>";
-    return $content;
-    // Node Aktualisieren
+    // Checke ob der Node vom Besitzer geändert wird.
+    wire('log')->save('Node', "Node $mac existiert bereits!");
+    return -1;
   } else {
     $n = $node;
-    $title = "Aktualisiert";
+    $fehlercode = 2;
   }
 
   $n->key = $key;
@@ -455,12 +451,11 @@ function registerNode($mac, $key){
   $n->save();
   $n->of(true);
 
-  $content = "<li>$title: $mac</li>";
-
+  // Remove key and mac from the session!
   wire('session')->remove('key');
   wire('session')->remove('mac');
 
-  return $content;
+  return $fehlercode;
 }
 
 /**
