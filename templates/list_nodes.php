@@ -117,33 +117,41 @@ if($input->urlSegment1){
      * 		key  string  Key des Nodes
      */
     case 'add':
-      // First save the Mac and Key to the Session Cockie
-      if(isset($input->get->mac)) $session->mac = strtoupper($sanitizer->text($input->get->mac));
-      if(isset($input->get->key)) $session->key = strtoupper($sanitizer->text($input->get->key));
+      // Speichere MAC und Key in der Session wenn vorhanden;
+      if(isset($input->get->mac)) $session->mac = $input->get->mac;
+      if(isset($input->get->key)) $session->key = $input->get->key;
 
-      // Check if user is logged in.
+      // Checken ob der Nutzer eingeloggt ist
       if(wire('user')->isLoggedin()){
-        // Node Registration Form
-        $content = renderPage('node_registration');
-
-        // If Form submitted
+        // Wurde das Formular abgesendet?
         if($input->post->submit){
-          // Check tha Macadresse
-          if(validateMac($input->post->mac)){
-            //  Register Node
-            $content = registerNode($input->post->mac, $input->post->key);
-            $content = "<h2>Node Hinzugefügt</h2><ul>$content</ul>";
-          } else {
-            $content = "<h2>Falsche Macadresse!</h2>";
+          // Registriere den neuen Node
+          switch (registerNode($input->post->mac, $input->post->key)) {
+            case '-1':
+              $content = "Der Node existiert bereits und du hast keine Rechte ihn zu ändern";
+              break;
+            case '0':
+              $content = "Es ist ein Fehler aufgetreten, der Administrator wurde Informiet. Bitte versuche es zu einem späteren Zeitpunkt noch einmal.";
+              break;
+            case '1':
+              // Zurück zur Privaten Routerliste
+              $session->redirect($pages->get('/node/')->httpUrl, false);
+              break;
+            case '2':
+              $content = "Dein Node wurde erfolgreich aktualisiert.";
+              break;
+            default:
+              $content = "Es ist ein allgemeiner Fehler aufgetreten";
+              break;
           }
+        } else {
+          // Gebe das Formular aus
+          $content = renderPage('node_registration');
         }
       } else {
-        // Verweise auf Anmeldung/Registrierung wenn Nutzer nicht eingeloggt.
-        // Hier soll später direkt das Anmelde/Registrierungs Formular eingeblendet werden.
         $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
-
-        // Speichere die RedirectUrl um nach der Registrierung/Anmeldung wieder hier zu landen.
-        $session->redirectUrl = $page->path;
+        // Speicher die URL um auf diese Seite zurück zu kehren!
+        $session->redirect($session->redirectUrl, false);
       }
       break;
       /**
