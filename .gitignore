@@ -26,3 +26,4 @@ config.php
 templates/scripts/node_migration.php
 templates/prepros.cfg
 /.project
+assets
