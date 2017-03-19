@@ -142,7 +142,7 @@ if($input->urlSegment1){
                 $content = "Dein Node wurde erfolgreich aktualisiert.";
                 break;
               default:
-                $content = "Es ist ein allgemeiner Fehler aufgetreten";
+                $content = "Es ist ein allgemeiner Fehler aufgetreten.";
                 break;
               }
           } else {
@@ -213,10 +213,6 @@ if($input->urlSegment1){
             $content = "<h2>Nodes Hinzufügen</h2><ul>$content</ul>";
           }
         break;
-<<<<<<< HEAD
-        case 'update':
-          if($input->get->key != "nre7u97ea") throw new Wire404Exception;
-=======
         /**
          * update
          *
@@ -226,21 +222,18 @@ if($input->urlSegment1){
          */
         case 'update':
           if($input->get->key != "nre7u97ea") throw new WirePermissionException; // Without or with wrong key no Excption
->>>>>>> master
           $useMain = false;
           $update = $modules->get('ffNodeInfo');
           $update->set_nodeinfo(new HookEvent);
           echo "Node Info Updated";
         break;
-<<<<<<< HEAD
-=======
+
         /**
          * move
          *
          * Erste Version zum verschieben von Nodes von einem zum anderem Account.
          * Später auslagern in das Node module.
          */
->>>>>>> master
         case 'move':
           function moveNodes($from, $to, $search, $do = false){
             $error = "";
@@ -313,11 +306,12 @@ if($input->urlSegment1){
               <td><a href='$node->httpUrl'>$node->subtitle</a></td>
               <td>$node->title</td>
               <td>$node->node_firmware</td>
-              <td>".($node->online == 1 ? "<span style='color:green'>online</span>" : "<span style='color:red'>offline</a>")."</td>
-              <td>{$node->operator->name}</td>
+              <td>".$node->edit('note')."</td>
+              <td>".($node->online == 1 ? "online" : "offline")."</td>
+              <td><a href='{$node->httpUrl}?delete=true' title='Node löschen.'><i class='fa fa-trash'></i></a></td>
             </tr>";
   }
 
   $page->table = $table;
-  $content = renderPage('list_nodes_private');
+  $content = renderPage('list_nodes');
 }
