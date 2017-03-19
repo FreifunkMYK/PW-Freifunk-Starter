@@ -433,7 +433,7 @@ function registerNode($mac, $key){
   // Definiere Systemvariablen
   $page = wire('page');
   $node = wire('pages')->get("template=node, title=$mac");
-  $parent = wire('pages')->get($page->id);
+  $parent = wire('pages')->get("/node/");
   $operator = wire('user')->id;
 
   // Existiert der Node bereits?
@@ -461,37 +461,6 @@ function registerNode($mac, $key){
   wire('session')->remove('mac');
 
   return $fehlercode;
-}
-
-/**
- * deleteNode deletes one ore more nodes.
- */
-function deleteNode($posts){
-  // Erzeuge ein Array aus $posts
-  if(!$posts instanceof PageArray){
-    if($posts instanceof Page){
-      $post = $posts;
-      $posts = new PageArray();
-      $posts->add($post);
-    } else if(empty($posts)){
-      $post = wire('page');
-      $posts = new PageArray();
-      $posts->add($post);
-    } else if(is_string($posts)){
-      // selector string
-      $selector = $posts;
-      $posts = wire('pages')->find("$selector");
-    }
-  }
-
-  foreach($posts as $post){
-    if($post->template != "node") break; // Only for nodes
-    $pages = wire('pages');
-
-    $pages->delete($post, true);
-  }
-
-  return true;
 }
 
 /**
