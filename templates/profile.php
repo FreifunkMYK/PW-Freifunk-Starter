@@ -1,4 +1,11 @@
 <?php
+/************************************
+* Template: Profile
+*
+* Anzeige und Verwaltung des eigenen Benutzerprofils.
+* Überischt über Registrierte Nodes und Services.
+* Nur das eigene Profil ist einsehbar!
+*/
 function makeTable(PageArray $pages, $tableArray, $status = false){
   $tableHead = '';
   $tableBody = '';
@@ -38,11 +45,14 @@ if($input->urlSegment1 == "pwreset") {
 }
 
 // Wenn inputsegment 1 nicht gesetzt ist dann leite auf den aktuellen Benutzer weiter.
-// Nur eingeloggte User können Benutzerkonten ansehen
-if(!wire('user')->isLoggedin() && $input->urlSegment1 != "pwreset") throw new Wire404Exception();
+// Nutzer haben nur das Recht ihren eigenen Account einzusehen.
+if(!wire('user')->isLoggedin() && $input->urlSegment1 != "pwreset") throw new WirePermissionException();
+if($input->urlSegment1 != $user->name) throw new WirePermissionException();
 if(!$input->urlSegment1) $session->redirect("{$pages->get('/profile/')->url}{$user->name}");
 
-
+/*
+* Durch die eingabe von /profile/<username>/edit kann der Benutzer einstellungen in seinem Profil vornehmen.
+*/
 if($input->urlSegment2 == "edit"){
   if($input->urlSegment1 != $user->name) $session->redirect("{$pages->get('/profile/')->url}{$user->name}/edit");
   // Get User Objekt from current User
