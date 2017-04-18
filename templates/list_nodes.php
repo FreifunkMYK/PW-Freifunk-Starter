@@ -151,7 +151,7 @@ if($input->urlSegment1){
       } else {
         $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
         // Speicher die URL um auf diese Seite zurück zu kehren!
-        $session->redirect($session->redirectUrl, false);
+        $session->redirectUrl($pages->get('/node/')->httpUrl."/add", false);
       }
       break;
       /**
