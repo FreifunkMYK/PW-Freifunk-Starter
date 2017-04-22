@@ -99,6 +99,12 @@ class ffNodeInfo extends WireData implements Module, ConfigurableModule{
       return "not working at the moment!";
     }
 
+    /**
+     * get_nodeinfo
+     *
+     * MAC Adresse or nodeid
+     * return array
+     */
     public function get_nodeinfo($mac) {
         $mac = strtoupper(str_replace(':', '', $mac));
         $data = array();
