@@ -5,6 +5,13 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
     protected $ldapSession = null;
     protected $host, $port, $defaultLoginDomain, $userDefaultRoles, $protocol, $debugMode, $useV3, $admin, $secret, $ldapSetting;
 
+    /* @var resource $con holds the LDAP connection*/
+    protected $con = null;
+    /* @var int $bound What type of connection does already exist? */
+    protected $bound = 0; // 0: anonymous, 1: user, 2: superuser
+    /* @var array $users User data cache */
+    protected $users = null;
+
     public static function getModuleInfo() {
         return array(
             'title' => __('LDAP Helper'),
@@ -15,6 +22,20 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
             'autoload' => true
         );
     }
+
+    /*public function set($type, $value){
+      switch ($type) {
+        case 'user':
+          $this->user = $value;
+          break;
+        case 'pass'
+          $this->pass = $value;
+          break;
+        case 'email'
+          $this->email = $value;
+          break;
+        }
+    }*/
 
     public function ___install() {
         if (!function_exists('ldap_connect'))
@@ -163,18 +184,82 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
       }
     }
 
+    public function save(array $user){
+      if(empty($user['username'])) return;
+
+      if(isset($user['reset'])){
+        return $this->ldapHelperReset($user);
+      } else {
+        return $this->ldapHelperUpdate($user);
+      }
+    }
+
+    protected function ldapHelperReset(array $user){
+      if(!$username = $user['user']) return false; // Return if no Username was set.
+      if(!$newPassword = $user['newPassword']) return false; // Return without new Password.
+
+      if(!$con = $this->ldapHelperConnect()) return false; // Connection Failed
+
+      // bind by Admin Account to Reset Password.
+      if(!@ldap_bind($ds,"$this->admin", "$this->secret")){
+        $this->log->save('ldap_helper', "Change Password failed to bind Admin");
+        return false;
+      }
+      /*$user_search = ldap_search($con, "dc=ffmyk,dc=de","(|$username)");
+      $user_get = ldap_get_entries($con, $user_search);
+      $user_entry = ldap_first_entry($con, $user_search);*/
+
+      $dn = "uid=".$username.",dc=ffmyk,dc=de";
+      $entry =  array('userpassword' => $this->makeSshaPassword($newPassword));
+
+      if(!@ldap_mod_replace($con, $dn, $entry)) {
+        $error = ldap_error($con);
+        $errno = ldap_errno($con);
+        $this->log->save('ldap_helper', "Change Password failed: $error ($errno)");
+        return false;
+      }
+
+      return true;
+    }
+
+    protected function ldapHelperUpdate(array $user){
+      if(!$con = $this->ldapHelperConnect()) return; // Connection Failed
+
+      $username = $user['username'];
+      $newPassword = (isset($user['newPassword']) ? $user['newPassword'] : "");
+      $oldPassword = (isset($user['oldPassword']) ? $user['oldPassword'] : "");
+      $search = "(uid=$user)";
+
+      if(!empty($newPassword)){
+        $entry["userPassword"] = $this->makeSshaPassword($newPassword);
+      }
+
+      $user_search = ldap_search($con, "dc=ffmyk,dc=de","(|$username)");
+      $user_get = ldap_get_entries($con, $user_search);
+      $user_entry = ldap_first_entry($con, $user_search);
+      $user_dn = ldap_get_dn($con, $user_entry);
+
+      if(ldap_bind($con, $user_dn, $oldPassword) === false) { // to change password
+        return false;
+      }
+
+      if(ldap_modify($con, $user_dn, $entry) == false){
+        $error = ldap_error($con);
+        $errno = ldap_errno($con);
+        $this->log->save('ldap_helper', "Change Password failed $error ($errno)");
+        return false;
+      }
+    }
+
+    /*
     protected function ldapHelperChangePw(HookEvent $event) {
         $return = $event->arguments[0];
 
-        $this->message("Password: $return");
-
-        /*$page = $event->arguments[0];
+        $page = $event->arguments[0];
         $user = wire('user');
         $users = wire('users');
 
-        $this->message("Page Save");
         if($page->template != 'user' || !$page->id) return;
-
 
         foreach($event->arguments[1] as $key => $argument){
           $this->message("$key: $argument");
@@ -184,10 +269,8 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
 
         if($page->isChanged('pass'))
           $page->of(false);
-          $this->message("Password Changed to {$page->pass}");
-          $page->of(true); */
 
-        /*if(!$con = $this->ldapHelperConnect()) return;
+        if(!$con = $this->ldapHelperConnect()) return;
 
         $user_search = ldap_search($con,"dc=ffmyk,dc=de","(|(uid=$user))");
         $user_get = ldap_get_entries($con, $user_search);
@@ -205,8 +288,8 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
             $error = ldap_error($con);
             $errno = ldap_errno($con);
             $message = "$errno - $error";
-        }*/
-      }
+        }
+      }*/
 
     public function ldapHelperDeleteUser(HookEvent $event) {
         $page = $event->arguments("page");
@@ -243,7 +326,20 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
       return $hash;
     }
 
-    protected function ldapHelperConnect() {
+    // Zum austauschen von ldapHelperConnect function!
+    protected function _openLDAP() {
+      if($this->con) return true; // connection already established
+
+      if($this->debugMode) ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7); // LDAP DebugMode
+
+      if(!$this->con = @ldap_connect($this->host, $this->port)) return $this->log->save('LDAP', printf(__("Failed to connect LDAP %d pages."), ldap_err2str(ldap_errno($connection)))); // Annahme: der LDAP Server befindet sich auf diesem Host
+
+      if ($this->useV3) ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3); // Set LDAP_PROTOCOL_VERSION
+
+      return true;
+    }
+
+    protected function ldapHelperConnect(){
       if ($this->debugMode) ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7); // LDAP DebugMode
       if(!$connection = ldap_connect($this->host, $this->port)) return $this->log->save('LDAP', printf(__("Failed to connect LDAP %d pages."), ldap_err2str(ldap_errno($connection)))); // Annahme: der LDAP Server befindet sich auf diesem Host
       if ($this->useV3) ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3); // Set LDAP_PROTOCOL_VERSION
@@ -251,7 +347,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
     }
 
     protected function ldapHelperWrite($ds) {
-      return ldap_bind($ds,"$this->admin", "$this->secret");
+      return @ldap_bind($ds,"$this->admin", "$this->secret");
     }
 
     public function validateConfiguration() {

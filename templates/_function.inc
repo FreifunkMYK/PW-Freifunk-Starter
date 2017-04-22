@@ -426,11 +426,16 @@ function createPage($template, $parent, $title){
  */
 function registerNode($mac, $key){
   if(empty($mac) || empty($key)) return 0;
+
+  // Normalize Mac Address
+  $mac = normalizeMac($mac);
+
   // Definiere Systemvariablen
   $page = wire('page');
   $node = wire('pages')->get("template=node, title=$mac");
-  $parent = wire('pages')->get($page->id);
+  $parent = wire('pages')->get("/node/");
   $operator = wire('user')->id;
+
   // Existiert der Node bereits?
   if($node instanceof Nullpage){
     $titlemac = strtoupper($mac);
