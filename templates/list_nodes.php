@@ -9,6 +9,9 @@ if($input->urlSegment2) throw new Wire404Exception(); // sobald mehr als ein url
 
 if($input->urlSegment1){
   switch($input->urlSegment1){
+    case 'dokumentation':
+      $useMain = false;
+      include_once('scripts/createDokumentation.php');
     /**
      * list gibt eine Liste aller Nodes aus.
      */
@@ -126,27 +129,23 @@ if($input->urlSegment1){
         // Wurde das Formular abgesendet?
         if($input->post->submit){
           // Registriere den neuen Node
-          if(validateMac($input->post->mac)){
-            switch (registerNode($input->post->mac, $input->post->key)) {
-              case '-1':
-                $content = "Der Node existiert bereits und du hast keine Rechte ihn zu ändern";
-                break;
-              case '0':
-                $content = "Es ist ein Fehler aufgetreten, der Administrator wurde Informiet. Bitte versuche es zu einem späteren Zeitpunkt noch einmal.";
-                break;
-              case '1':
-                // Zurück zur Privaten Routerliste
-                $session->redirect($pages->get('/node/')->httpUrl, false);
-                break;
-              case '2':
-                $content = "Dein Node wurde erfolgreich aktualisiert.";
-                break;
-              default:
-                $content = "Es ist ein allgemeiner Fehler aufgetreten.";
-                break;
-              }
-          } else {
-            $content = "<h2>Falsche Mac</h2>";
+          switch (registerNode($input->post->mac, $input->post->key)) {
+            case '-1':
+              $content = "Der Node existiert bereits und du hast keine Rechte ihn zu ändern";
+              break;
+            case '0':
+              $content = "Es ist ein Fehler aufgetreten, der Administrator wurde Informiet. Bitte versuche es zu einem späteren Zeitpunkt noch einmal.";
+              break;
+            case '1':
+              // Zurück zur Privaten Routerliste
+              $session->redirect($pages->get('/node/')->httpUrl, false);
+              break;
+            case '2':
+              $content = "Dein Node wurde erfolgreich aktualisiert.";
+              break;
+            default:
+              $content = "Es ist ein allgemeiner Fehler aufgetreten";
+              break;
           }
         } else {
           // Gebe das Formular aus
@@ -155,7 +154,7 @@ if($input->urlSegment1){
       } else {
         $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
         // Speicher die URL um auf diese Seite zurück zu kehren!
-        $session->redirect($session->redirectUrl, false);
+        $session->redirectUrl($pages->get('/node/')->httpUrl."/add", false);
       }
       break;
       /**
@@ -227,7 +226,6 @@ if($input->urlSegment1){
           $update->set_nodeinfo(new HookEvent);
           echo "Node Info Updated";
         break;
-
         /**
          * move
          *
@@ -306,12 +304,11 @@ if($input->urlSegment1){
               <td><a href='$node->httpUrl'>$node->subtitle</a></td>
               <td>$node->title</td>
               <td>$node->node_firmware</td>
-              <td>".$node->edit('note')."</td>
-              <td>".($node->online == 1 ? "online" : "offline")."</td>
-              <td><a href='{$node->httpUrl}?delete=true' title='Node löschen.'><i class='fa fa-trash'></i></a></td>
+              <td>".($node->online == 1 ? "<span style='color:green'>online</span>" : "<span style='color:red'>offline</a>")."</td>
+              <td>{$node->operator->name}</td>
             </tr>";
   }
 
   $page->table = $table;
-  $content = renderPage('list_nodes');
+  $content = renderPage('list_nodes_private');
 }
