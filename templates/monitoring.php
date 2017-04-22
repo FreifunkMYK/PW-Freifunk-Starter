@@ -53,6 +53,8 @@ print_html_bot();
 # Suche relevante Router
 # Eingabe: Array, Liste eigener Router
 # Ausgabe: Indizes relevanter Router
+
+$ffNodeInfo = wire('modules')->get('ffNodeInfo');
 function search_own_router($all_nodes,$own_nodes) {
     # Deklariere Array
     $own_router_index = array();
