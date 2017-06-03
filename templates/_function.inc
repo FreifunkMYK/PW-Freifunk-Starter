@@ -438,7 +438,7 @@ function registerNode($mac, $key){
     $fehlercode = 1;
   } elseif($node->operator->id != $operator) {
     // Checke ob der Node vom Besitzer geändert wird.
-    wire('log')->save('Node', "Node $mac existiert bereits!");
+    wire('log')->save('node', "Node $mac existiert bereits!");
     return -1;
   } else {
     $n = $node;
