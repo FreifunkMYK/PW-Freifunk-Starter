@@ -327,6 +327,8 @@ function validateMac($mac){
   // 01:23:45:67:89:ab
   if (preg_match('/^([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}$/', $mac))
     return true;
+  // 01_23_45_67_89_ab
+  if (preg_match('/^([a-fA-F0-9]{2}_){5}[a-fA-F0-9]{2}$/', $mac))
   // 01-23-45-67-89-ab
   if (preg_match('/^([a-fA-F0-9]{2}\-){5}[a-fA-F0-9]{2}$/', $mac))
     return true;
@@ -347,6 +349,9 @@ function normalizeMac($mac){
   // remove any dots
   $mac =  str_replace(".", "", $mac);
 
+  // remove any underscore
+  $mac = str_replace("_", "", $map);
+  
   // replace dashes with colons
   $mac =  str_replace("-", ":", $mac);
 
