@@ -118,7 +118,7 @@ if($input->urlSegment1){
      */
     case 'add':
       // Speichere MAC und Key in der Session wenn vorhanden;
-      if(isset($input->get->mac)) $session->mac = $input->get->mac;
+      if(isset($input->get->mac)) $session->mac = strtolower(normalizeMac($input->get->mac));
       if(isset($input->get->key)) $session->key = $input->get->key;
 
       // Checken ob der Nutzer eingeloggt ist
