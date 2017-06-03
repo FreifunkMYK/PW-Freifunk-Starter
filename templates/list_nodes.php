@@ -149,9 +149,9 @@ if($input->urlSegment1){
           $content = renderPage('node_registration');
         }
       } else {
-        $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
+        $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder <a href='https://www.freifunk-myk.de/registration/'>Registrieren</a>.</article>";
         // Speicher die URL um auf diese Seite zurück zu kehren!
-        $session->redirectUrl(wire('pages')->get('/node/')->httpUrl."/add", false);
+        $session->redirectUrl = wire('pages')->get('/node/')->httpUrl."/add";
       }
       break;
       /**

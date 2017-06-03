@@ -9,12 +9,12 @@
   <form class='omb_nodeAdd' data-abide action='./add' accept-charset='UTF-8' autocomplete='off' method='post'>
       <div class='row collapse'>
         <div class='small-6 columns'>
-          <input type='text' class='form-control' required pattern='([[:xdigit:]]{2}:|-){5}([[:xdigit:]]{2})' name='mac' placeholder='Example: E8:DD:08:9C:X7:78' <?php if($session->mac) echo "value='$session->mac'"?>>
+          <input type='text' class='form-control' name='mac' required pattern='^([a-fA-F0-9]{2}[:]){5}([a-fA-F0-9]{2})$' placeholder='Example: E8:DD:08:9C:X7:78' <?php if($session->mac) echo "value='$session->mac'"?>>
           <small class='error'>Bitte beachte die Konvention!</small>
         </div>
         <div class='small-6 columns'>
-          <input type='text' class='form-control' name='key' required pattern='([[:xdigit:]]{64})'placeholder='Public Key' <?php if($session->key) echo "value='$session->key'"?>>
-          <small class='error'>Der PublicKey ist ein Pflichtfeld.</small>
+          <input type='text' class='form-control' name='key' required pattern='([A-Za-z0-9]{64})' placeholder='Public Key' <?php if($session->key) echo "value='$session->key'"?>>
+          <small class='error'>Der PublicKey ist ein Pflichtfeld, er besteht aus 64 Zeichen von 0-9 und a-f, A-F.</small>
         </div>
       </div>
 

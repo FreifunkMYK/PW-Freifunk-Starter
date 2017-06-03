@@ -347,11 +347,11 @@ function normalizeMac($mac){
   $mac = trim($mac);
 
   // remove any dots
-  $mac =  str_replace(".", "", $mac);
+  $mac =  str_replace(".", ":", $mac);
 
   // remove any underscore
-  $mac = str_replace("_", "", $map);
-  
+  $mac = str_replace("_", ":", $mac);
+
   // replace dashes with colons
   $mac =  str_replace("-", ":", $mac);
 
