@@ -1,14 +1,23 @@
 <?php
-
+/**
+* Changelog:
+*
+* LDAP Password Reset
+*
+* Roadmap:
+*
+* LDAP Passwort Change from User
+**/
 class ldapHelper extends WireData implements Module, ConfigurableModule
 {
     protected $ldapSession = null;
-    protected $host, $port, $defaultLoginDomain, $userDefaultRoles, $protocol, $debugMode, $useV3, $admin, $secret, $ldapSetting;
+    protected $host, $port, $defaultLoginDomain, $userDefaultRoles, $protocol, $debugMode, $useV3, $admin, $secret, $ldapSetting, $userdn;
+    public $message;
 
     public static function getModuleInfo() {
         return array(
             'title' => __('LDAP Helper'),
-            'version' => '006',
+            'version' => '007',
             'author' => 'Kreativmonkey',
             'summary' => __('Hendle LDAP Communication for Processwire'),
             'singular' => true,
@@ -39,6 +48,9 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
 
         if (isset ($this->data ['loginDomain']))
             $this->defaultLoginDomain = $this->data ['loginDomain'];
+
+        if (isset ($this->data ['userdn']))
+            $this->userdn = $this->data ['userdn'];
 
         if (isset ($this->data ['admin']))
             $this->admin = $this->data ['admin'];
@@ -95,7 +107,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
       if(!$r= $this->ldapHelperWrite($connect)) return false;
 
       // Add User to the Database
-      if(!$r= ldap_add($connect, "uid=$username,ou=People,dc=ffmyk,dc=de", $info)){
+      if(!$r= ldap_add($connect, "uid=$username,$this->userdn", $info)){
         $massage = ldap_err2str(ldap_errno($connect));
         $this->log->save('ldap_helper', "Create User failed $ldapMassage");
 
@@ -163,50 +175,72 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
       }
     }
 
-    protected function ldapHelperChangePw(HookEvent $event) {
-        $return = $event->arguments[0];
+    /**
+     * Change the Password for the LDAP User
+     * $username = Ldap uid
+     * $newPassword = the new Password to set for the User
+     * $newPasswordCnt = double check the new Password
+     *
+     * return
+     * string
+     */
+    public function ldapHelperChangePw($username, $newPassword, $newPasswordCnt) {
+      $user = wire('users')->get("name=$username");
+      $dn = $this->userdn;
 
-        $this->message("Password: $return");
-
-        /*$page = $event->arguments[0];
-        $user = wire('user');
-        $users = wire('users');
-
-        $this->message("Page Save");
-        if($page->template != 'user' || !$page->id) return;
-
-
-        foreach($event->arguments[1] as $key => $argument){
-          $this->message("$key: $argument");
-        }
-
-        $this->message("$message");
-
-        if($page->isChanged('pass'))
-          $page->of(false);
-          $this->message("Password Changed to {$page->pass}");
-          $page->of(true); */
-
-        /*if(!$con = $this->ldapHelperConnect()) return;
-
-        $user_search = ldap_search($con,"dc=ffmyk,dc=de","(|(uid=$user))");
-        $user_get = ldap_get_entries($con, $user_search);
-        $user_entry = ldap_first_entry($con, $user_search);
-        $user_dn = ldap_get_dn($con, $user_entry);
-
-        $entry = array();
-        $entry["userPassword"] = $this->makeSshaPassword($pw_new);
-
-        if(ldap_bind($con, $user_dn, $pw_old) === false){
-            $message = "Error E101 - Current Username or Password is wrong.";
-            return false;
-        }
-        if(ldap_modify($con,$user_dn,$entry) === false){
-            $error = ldap_error($con);
-            $errno = ldap_errno($con);
-            $message = "$errno - $error";
-        }*/
+      if($user instanceof NullPage) return "User dosn't exist.";
+      if(empty($newPassword) | empty($newPasswordCnt)) {
+        $this->message = "Not enouth values.";
+        return false;
       }
+
+      // check if new Password match
+      if($newPassword != $newPasswordCnt) {
+        $this->message = "Password doesn't match.";
+        return false;
+      }
+
+      // Connect to LDAP Server
+      if(!$con = $this->ldapHelperConnect()) {
+        $this->message = "Verbindungsprobleme, bitte versuche es später noch einmal.";
+        return false;
+      }
+
+      // Search for the user in the ldap Directory
+      $user_search = ldap_search($con,$dn,"(|(uid=$username))"); // Ressource ID:
+      $user_get = ldap_get_entries($con,$user_search); // array with all entries
+      $user_entry = ldap_first_entry($con, $user_search); // array with ressource
+      $user_dn = ldap_get_dn($con, $user_entry); // uid=$userid,ou=People,dc=ffmyk,dc=de
+      $user_id = $user_get[0]["uid"][0]; // the user ID
+      $user_givenName = $user_get[0]["givenname"][0]; // Given name from user
+      $user_search_array = array("*", "ou", "uid");
+      $user_search_filter = "(|(uid=$user_id))";
+      $user_search_opt = ldap_search($con, $user_dn, $user_search_filter, $user_search_array); // array ressource
+      $user_get_opt = ldap_get_entries($con,$user_search_opt); // array with the entrie
+
+      $encoded_password = $this->makeSshaPassword($newPassword);
+
+      $entry = array();
+      $entry["userPassword"] = "$encoded_password";
+
+      // bind mit passendem dn für aktulisierenden Zugriff
+      if(!$r= $this->ldapHelperWrite($con)) {
+        $this->message = "Verbindungsprobleme.";
+        return false;
+      }
+
+      if(ldap_modify($con,$user_dn,$entry) === false){
+        $error = ldap_error($con);
+        $errno = ldap_errno($con);
+        $this->log->save('ldap_helper', "$username - Your password cannot be change, please contact the administrator.");
+        $this->log->save('ldap_helper', "$errno - $error");
+        $this->message = "Dein Password konnte nicht gespeichert werden. Bitte kontaktiere den Administrator";
+        return false;
+      } else {
+        $this->message = "Dein Password wurde geändert, du kannst dich nun mit dem neuen Password einloggen.";
+        return true;
+      }
+    }
 
     public function ldapHelperDeleteUser(HookEvent $event) {
         $page = $event->arguments("page");
@@ -251,6 +285,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
     }
 
     protected function ldapHelperWrite($ds) {
+      if(empty($ds)) return;
       return ldap_bind($ds,"$this->admin", "$this->secret");
     }
 
@@ -293,6 +328,26 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
             $useSSLField->checked = 1;
         $inputfields->add($useSSLField);
 
+        $defaultLoginDomainField = wire('modules')->get('InputfieldText');
+        $defaultLoginDomainField->name = 'loginDomain';
+        $defaultLoginDomainField->label = __('Default Login Domain');
+        $defaultLoginDomainField->columnWidth = 40;
+        $defaultLoginDomainField->required = 1;
+        if (isset ($data ['loginDomain']))
+            $defaultLoginDomainField->value = $data ['loginDomain'];
+        $defaultLoginDomainField->description = __('This is the domain name used by default if the user does not supply a domain name. It will be added to the username, e.g. username@domainname.com');
+        $inputfields->add($defaultLoginDomainField);
+
+        $adminLoginField = wire('modules')->get('InputfieldText');
+        $adminLoginField->name = 'userdn';
+        $adminLoginField->columnWidth = 40;
+        $adminLoginField->label = __('LDAP User DN');
+        $adminLoginField->required = 1;
+        if (isset ($data ['userdn']))
+            $adminLoginField->value = $data ['userdn'];
+        $adminLoginField->description = __('The DN for the user. Example: ou=Person,dc=domain,dc=com');
+        $inputfields->add($adminLoginField);
+
         $useV3Field = wire('modules')->get('InputfieldCheckbox');
         $useV3Field->name = 'useV3';
         $useV3Field->columnWidth = 20;
@@ -301,15 +356,6 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
         if (isset ($data ['useV3']) && $data ['useV3'] == 1)
             $useV3Field->checked = 1;
         $inputfields->add($useV3Field);
-
-        $defaultLoginDomainField = wire('modules')->get('InputfieldText');
-        $defaultLoginDomainField->name = 'loginDomain';
-        $defaultLoginDomainField->label = __('Default Login Domain');
-        $defaultLoginDomainField->required = 1;
-        if (isset ($data ['loginDomain']))
-            $defaultLoginDomainField->value = $data ['loginDomain'];
-        $defaultLoginDomainField->description = __('This is the domain name used by default if the user does not supply a domain name. It will be added to the username, e.g. username@domainname.com');
-        $inputfields->add($defaultLoginDomainField);
 
         $adminLoginField = wire('modules')->get('InputfieldText');
         $adminLoginField->name = 'admin';

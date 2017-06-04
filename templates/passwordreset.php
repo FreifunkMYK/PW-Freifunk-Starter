@@ -16,7 +16,7 @@ if($input->get->token){
 
 $content = $t->render();
 
-// Nach dem Speichern eines Formulars
+// Nach dem Speichesrn eines Formulars
 if($input->post->submit || $input->get->submit){
 
   // Wenn ein neues Password gesetzt wurde
@@ -24,14 +24,16 @@ if($input->post->submit || $input->get->submit){
     $ldap = wire('modules')->get("ldapHelper");
 
     $username = $sanitizer->name($input->post->user);
-    $change['newpassword'] = $sanitizer->text($input->post->newpw);
 
-    if($ldap->modifyUser($username, $change)){
-      $content = "Password gespeichert, du kannst dich nun einloggen.";
+    if($ldap->ldapHelperChangePw($username, $sanitizer->text($input->post->newpw), $sanitizer->text($input->post->repeatpw))){
+      $content = $ldap->message;
       $u = wire('users')->get("name=$username");
       $u->authkey = "";
+      $u->of(false);
+      $u->save();
+      $u->of(true);
     } else {
-      $content = "{$input->post->user}: Es ist ein fehler aufgetreten, versuche es zu einem Späteren Zeitpunkt noch einmal!";
+      $content = "Ein fehler ist aufgetreten: <br /> {$ldap->message}";
     }
   }
 
@@ -45,7 +47,7 @@ if($input->post->submit || $input->get->submit){
     $u->save();
     $u->of(true);
 
-    $reseturl = wire('page')->httpUrl ."/pwreset?token=". $u->authkey ."&user=". $u->name;
+    $reseturl = wire('page')->httpUrl ."?token=". $u->authkey ."&user=". $u->name;
     $mail = wireMail();
     $mail->to($u->email)->from('reset@ffmyk.de');
     $mail->subject("Reset Password");
@@ -55,6 +57,7 @@ if($input->post->submit || $input->get->submit){
     Sollte der Link nicht anklickbar sein, kopiere ihn und füge ihn in die Adresszeile deines Browsers ein.");
     if($mail->send()) wire('log')->message('Send Mail: Password Reset') ;
 
-    $content = "Du erhälst eine E-Mail mit einem Link, falls keine E-Mail ankommt versuche es später noch einmal.";
+    $t = new TemplateFile($config->paths->templates ."markup/passwordreset_mail.inc");
+    $content = $t->render();
   }
 }
