@@ -34,6 +34,8 @@ if($input->urlSegment1){
         echo serialize($service_serial);
       break;
     case 'add':
+      if($input->post->mac) $mac = normalizeMac($sanitizer->text($input->post->mac));
+      if($input->post->title) $inputTitle = $sanitizer->name($input->post->title);
       if(!wire('user')->isLoggedin()){
         $content = "<article><h2>Gesicherte Seite</h2>Bitte Anmelden oder Registrieren.</article>";
         $session->redirectUrl = $page->path."add/";
@@ -44,16 +46,16 @@ if($input->urlSegment1){
         $user = wire('user')->name;
         $parent = $pages->get($page->id);
         $operator = wire('user')->id;
-        if($pages->get("template=services, title={$input->post->mac}") instanceof Nullpage){
+        if($pages->get("template=services, title=$mac") instanceof Nullpage){
           // Creat IP
           do {
             $ip = long2ip(rand(ip2long("{$pages->get('template=site-setting')->start_ip}"), ip2long("{$pages->get('template=site-setting')->end_ip}")));
           } while(!$pages->get("template=services, static_ip=$ip") instanceof NullPage);
 
           // Add new if not exist
-          $mac = strtoupper($input->post->mac);
-          $s = createPage('service', $parent, normalizeMac($mac));
-          $s->subtitle = $sanitizer->title($input->post->title);
+          $mac = strtoupper($mac);
+          $s = createPage('service', $parent, $mac);
+          $s->subtitle = $inputTitle;
           $s->operator = $operator;
           $s->static_ip = $ip;
           $s->save();
