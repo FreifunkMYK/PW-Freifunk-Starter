@@ -487,7 +487,9 @@ function deleteNode($posts){
   foreach($posts as $post){
     if($post->template != "node") break; // Only for nodes
     $pages = wire('pages');
+    $user = wire('user');
 
+    wire("log")->save('delete', "$post->title was Deleted by $user->name");
     $pages->delete($post, true);
   }
 
@@ -726,4 +728,17 @@ function time_elapsed_string($ptime){
             return 'seit '. $r . ' ' . ($r > 1 ? $a_plural[$str] : $str);
         }
     }
+}
+
+
+/**
+ * Find the progblem of deleted Nodes
+ */
+$this->pages->addHookBefore('deleted', $this, 'deletedNode');
+
+function deletedNode() {
+  $page = wire('page');
+  $user = wire('user');
+
+  wire('log')->save('delete', "$page wurde gelöscht $user");
 }
