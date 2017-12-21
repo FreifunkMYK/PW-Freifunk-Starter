@@ -730,15 +730,20 @@ function time_elapsed_string($ptime){
     }
 }
 
-
 /**
  * Find the progblem of deleted Nodes
  */
-$this->pages->addHookBefore('deleted', $this, 'deletedNode');
+$this->addHookBefore('Pages::deleteReady', function(HookEvent $event) {
+  // Get the object the event occurred on, if needed
+  $pages = $event->object;
 
-function deletedNode() {
-  $page = wire('page');
+  // Get values of arguments sent to hook (and optionally modify them)
+  $page = $event->arguments(0);
   $user = wire('user');
+  /* Your code here, perhaps modifying arguments */
 
-  wire('log')->save('delete', "$page wurde gelöscht $user");
-}
+  // Populate back arguments (if you have modified them)
+  $event->arguments(0, $page);
+  wire('log')->save('delete', "$page: $page->title wurde gelöscht von $user:$user->name");
+
+});
