@@ -488,8 +488,10 @@ function deleteNode($posts){
     if($post->template != "node") break; // Only for nodes
     $pages = wire('pages');
     $user = wire('user');
+    if($post->operator->id != $user->id) break; // delete only if the user owner of the node
 
-    wire("log")->save('delete', "$post->title was Deleted by $user->name");
+    $debug = var_export($post, true);
+    wire("log")->save('delete', "Delete page: $post->title from owner $post->operator == $user->id");
     $pages->delete($post, true);
   }
 
@@ -744,6 +746,27 @@ $this->addHookBefore('Pages::deleteReady', function(HookEvent $event) {
 
   // Populate back arguments (if you have modified them)
   $event->arguments(0, $page);
-  wire('log')->save('delete', "$page: $page->title wurde gelöscht von $user:$user->name");
+  $fp = fopen('vardump.txt', 'w');
+  fwrite($fp, serialize(var_export($page)));
+  fclose($fp);
+  wire('log')->save('delete', "Before deleteReady: $page->title");
+
+});
+
+/**
+ * Find the progblem of deleted Nodes
+ */
+$this->addHookAfter('Pages::deleteReady', function(HookEvent $event) {
+  // Get the object the event occurred on, if needed
+  $pages = $event->object;
+
+  // Get values of arguments sent to hook (and optionally modify them)
+  $page = $event->arguments(0);
+  $user = wire('user');
+  /* Your code here, perhaps modifying arguments */
+
+  // Populate back arguments (if you have modified them)
+  $event->arguments(0, $page);
+  wire('log')->save('delete', "After delteReady: $page");
 
 });
