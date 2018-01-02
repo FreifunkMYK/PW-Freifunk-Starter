@@ -158,8 +158,7 @@ if($input->urlSegment1 == "json"){
 } else if ($input->urlSegment1 == "yaml"){
 
   $useMain = false;
-  //var_dump(pageToYaml($routers));
-  phpinfo();
+  echo pageToYaml($routers);
 
 } else {
   $output = '';

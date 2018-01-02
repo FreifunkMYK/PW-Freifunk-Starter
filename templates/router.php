@@ -11,7 +11,8 @@ $betaSysupgrade = "";
 foreach ($page->firmwareList as $key => $firmware) {
   $template = new TemplateFile($config->paths->templates . "markup/router_firmware_table_tr.inc");
   $template->set('version', $firmware->version);
-  $template->set('builddate', $firmware->builddate);
+  //$template->set('builddate', $firmware->builddate);
+  $template->set('community', $firmware->community);
   $template->set('release', $firmware->release);
   $template->set('hash', ($firmware->hash ? $firmware->hash->md5 : ""));
   $template->set('filename', $firmware->filename);

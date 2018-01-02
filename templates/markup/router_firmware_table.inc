@@ -2,7 +2,7 @@
   <thead>
     <tr>
       <th width='50'>Version/<br/>Modell</th>
-      <th width='50'>Datum</th>
+      <th width='50'>Community</th>
       <th width='50'>Release</th>
       <th width='200'>MD5</th>
       <th>Download</th>
