@@ -101,6 +101,6 @@ function isActive(Page $page, Page $nav){
         <button type="submit" id="btnRegister" formaction="<?php echo $pages->get("/registration/")->httpUrl; ?>" class="btn btn-default">Registrieren</button>
       </div>
     </form>
-    <a href="<?=$pages->get("template=password-reset")->url?>">Password vergessen?</a>
+    <a href="<?=$pages->get("template=passwordreset")->url?>">Password vergessen?</a>
 </div>
 <?php } ?>
