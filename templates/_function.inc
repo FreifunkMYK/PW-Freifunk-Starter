@@ -747,7 +747,7 @@ $this->addHookBefore('Pages::deleteReady', function(HookEvent $event) {
   // Populate back arguments (if you have modified them)
   $event->arguments(0, $page);
   $fp = fopen('vardump.txt', 'w');
-  fwrite($fp, serialize(var_export($page)));
+  fwrite($fp, serialize(var_dump($page)));
   fclose($fp);
   wire('log')->save('delete', "Before deleteReady: $page->title");
 

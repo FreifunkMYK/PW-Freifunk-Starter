@@ -176,8 +176,7 @@ if($input->urlSegment1){
           // create the output
           $router = array();
           $router = array_map("unserialize", array_unique(array_map("serialize", $list)));
-          // TODO
-          // MAC adresse als array_map kriterium nutzen nicht den kompletten Datensatz!!!
+
           echo serialize($router);
         break;
         /**

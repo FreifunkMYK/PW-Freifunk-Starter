@@ -40,7 +40,6 @@ $script = "<script>
 
 $page->losttime = time_elapsed_string($page->getUnformatted('lastseen'));
 $content = renderPage();
-
 if($input->post->delete && !$input->post->cancle){
   deleteNode($node);
   $content = "Der Node wurde erfolgreich gelöscht. <a href='{$pages->get('/node/')->httpUrl}'>Zurück</a>";

@@ -38,7 +38,15 @@ if(!wire('user')->isLoggedin()){
       } else {
 			   $session->redirect($page->path, false);
        }
+      if($session->countlogintry){
+        $session->remove('countlogintry');
+        $session->remove('logintrytime');
+      }
 		}  else {
+      // count try for logging in!
+      $logintrynumber = ($session->countlogintry ? $session->countlogintry + 1 : 1);
+      $session->set("logintrytime", time());
+      $session->set("countlogintry", $logintrynumber);
 			$session->login_error = '<strong>Login fehlgeschlagen!</strong> Bitte versuche es noch einmal oder benutze die \'Passwort vergessen\' Funktion.';
 		}
 	}

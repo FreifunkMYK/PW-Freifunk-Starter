@@ -27,3 +27,7 @@ templates/scripts/node_migration.php
 templates/prepros.cfg
 /.project
 assets
+modules/PageActionEmail
+modules/PageActionExportCSV
+modules/ProcessExportProfile
+modules/ProcessPageListerPro
