@@ -62,7 +62,7 @@
       </p>
       <div class='row info-box'>
         <div class='columns large-4'>
-          <img class='responsive' src='https://placehold.it/350x200'></img>
+          <img class='responsive' src='https://place-hold.it/350x200'></img>
         </div>
         <div class='columns large-8 text-justify'>
           <h4>Freifunk-Router</h4>
@@ -78,13 +78,13 @@
             <br/>Der Austrittsort befindet sich im EU-Ausland oder bei einem Internetprovider, sodass die sonst übliche Störerhaftung nicht zutrifft. Da eine Webseite nur den Austrittsort sieht kann es vorkommen das Google auf Schwedisch oder Holländisch ist da es denkt das man sich dort befindet.</p>
         </div>
         <div class='columns large-4'>
-          <img class='responsive' src='https://placehold.it/350x200'></img>
+          <img class='responsive' src='https://place-hold.it/350x200'></img>
         </div>
       </div>
 
       <div class='row info-box'>
         <div class='columns large-4 '>
-          <img class='responsive' src='https://placehold.it/350x200'></img>
+          <img class='responsive' src='https://place-hold.it/350x200'></img>
         </div>
         <div class='columns large-8 text-justify'>
           <h4>Für wen ist Freifunk?</h4>

@@ -175,7 +175,7 @@ if($input->urlSegment1 == "json"){
 
   foreach($routers as $router){
     $title = $router->title;
-    $image = (count($router->image) ? $router->image->first()->size(300,300)->url : 'https://placehold.it/300x300');
+    $image = (count($router->image) ? $router->image->first()->size(300,300)->url : 'https://place-hold.it/300x300');
     $features = getTag($router->features, 2);
 
     $output .= "<a href='{$router->httpUrl}'>
