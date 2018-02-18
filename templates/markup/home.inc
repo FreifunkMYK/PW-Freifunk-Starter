@@ -177,7 +177,7 @@
                       <a href='https://wiki.freifunk.net/Berlin:%C3%9Cberlassungserkl%C3%A4rung' class='externalLink'>Überlassungserklärung</a> leihen.
                     </li>
                     <li>Zur Planung der neuen Verbindungen solltest du mit den Freifunker_innen,
-                      die die entfernten Router betreiben, <a href='../../contact'>Kontakt aufnehmen</a>.</li>
+                      die die entfernten Router betreiben, <a href='../../kontakt'>Kontakt aufnehmen</a>.</li>
                     </ul>
                   </dd>
                 </dl>
@@ -213,7 +213,7 @@
                           <a href='https://wiki.freifunk.net/Berlin:%C3%9Cberlassungserkl%C3%A4rung' class='externalLink'>Überlassungserklärung</a> leihen.
                         </li>
                         <li>Zur Planung der neuen Verbindungen solltest du mit den Freifunker_innen,
-                          die die entfernten Router betreiben, <a href='../../contact'>Kontakt aufnehmen</a>.</li>
+                          die die entfernten Router betreiben, <a href='../../kontakt'>Kontakt aufnehmen</a>.</li>
                         </ul>
                       </dd>
                     </dl>
