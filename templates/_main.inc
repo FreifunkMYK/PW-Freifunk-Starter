@@ -124,6 +124,7 @@ if(!wire('user')->isLoggedin()){
           <li><a href="<?=$pages->get("/about/")->url?>">About</a></li>
           <li><a href="https://wiki.freifunk-myk.de/wiki/faq">Faq</a></li>
           <li><a href="<?=$pages->get("/kontakt/")->url?>">Kontakt</a></li>
+	  <li><a href="<?=$pages->get("/impressum/")->url?>">Impressum</a></li>
         </ul>
         <p class="copywrite">Erstellt mit <a href="http://de.processwire.com/">ProcessWire</a> und <a href="http://foundation.zurb.com/">Foundation Zurb</a>. Zu finden auf <a href="https://github.com/FreifunkMYK/PW-Freifunk-Starter">GitHub</a>.
       </div>
