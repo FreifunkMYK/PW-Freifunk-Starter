@@ -1,7 +1,7 @@
 <?php
 
-$companyRouter = strtolower($page->parent->title) ."-". strtolower($page->title);
-$page->set('firmwareList', json_decode(file_get_contents("http://firmware.freifunk-myk.de/.static/filter/?filter={$companyRouter}&branch[]=stable&branch[]=beta&output=json")));
+$ffFirmware = $modules->get('ffRouterFirmware'); 
+$page->set('firmwareList', $ffFirmware->get_firmware($page));
 
 
 $stableSysupgrade = "";

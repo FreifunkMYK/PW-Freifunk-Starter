@@ -40,20 +40,34 @@ class ffRouterFirmware extends WireData implements Module, ConfigurableModule{
      * TODO!!
      */
     protected function gen_firmwarecache() {
-        foreach($this->cache->firmware as $firmware) {
-            $this->cache_firmware[base64_encode(strtoupper($farmware->filename))] = $firmware;
+        foreach($this->cache as $key => $value) {
+            $this->cache_firmware[$key] = $value;
         }
         $this->cache=false;
     }
 
+    /**
+     * Function to return Firmwarelist for the router
+     *
+     * @param  [type] $router [description]
+     * @return [type]         [description]
+     */
     public function get_firmware($router) {
       $this->cache_data();
 
       $router = $this->get_Page($router);
       $vendor = strtolower($router->parent->title);
       $model = strtolower($router->title);
+      $firmware_list = array();
 
-      
+      foreach($this->cache_firmware as $key => $firmware) {
+        if($firmware->vendor != $vendor) continue;
+        if($firmware->hardware != $model) continue;
+
+        $firmware_list[$key] = $firmware;
+      }
+
+      return $firmware_list;
     }
 
 
