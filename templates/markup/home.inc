@@ -73,9 +73,9 @@
 
       <div class='row info-box'>
         <div class='columns large-8 text-justify'>
-          <h4 class='text-upper'>Verbindung zum Internet</h4>
-          <p>Wenn du deinen Freifunk-Router ans Internet anbindest, baut dieser eine verschlüsselte Verbindung zu einem Verteilknoten auf. Dieser Verteilknoten weiß wo sich die anderen Freifunk-Router befinden und stellt zusätzlich eine verschlüsselte Verbindung zu einem Austrittsort ins Internet.
-            <br/>Der Austrittsort befindet sich im EU-Ausland oder bei einem Internetprovider, sodass die sonst übliche Störerhaftung nicht zutrifft. Da eine Webseite nur den Austrittsort sieht kann es vorkommen das Google auf Schwedisch oder Holländisch ist da es denkt das man sich dort befindet.</p>
+          <h4 class='text-upper'>Verbindung über Freifunk-Rheinland</h4>
+          <p>Wenn du deinen Freifunk-Router ans Internet anbindest, baut dieser eine verschlüsselte Verbindung zu einem Verteilknoten auf. Dieser Verteilknoten weiß wo sich die anderen Freifunk-Router befinden und stellt zusätzlich eine verschlüsselte Verbindung zu Freifunk-Rheinland auf.
+            <br/>Durch Freifunk-Rheinland können wir eine Verbindung ins Internet bereitstellen und euch vor der Störerhaftung bewahren. Wir bitten um <a href="https://www.freifunk-rheinland.net/mitmachen/spenden/">Spenden für Freifunk-Rheinland</a> um diesen Service auch in Zukunft bieten zu können.</p>
         </div>
         <div class='columns large-4'>
           <img class='responsive' src='https://placehold.it/350x200'></img>
