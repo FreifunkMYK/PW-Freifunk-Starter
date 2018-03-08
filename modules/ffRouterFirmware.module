@@ -1,0 +1,95 @@
+<?php
+
+class ffRouterFirmware extends WireData implements Module, ConfigurableModule{
+    protected $cache = false;
+    protected $cache_firmware = array();
+    protected $src, $firmware;
+
+    public static function getModuleInfo() {
+        return array(
+            'title' => __('FF Router Firmware'),
+            'version' => '001',
+            'author' => 'Kreativmonkey',
+            'summary' => __('Fetch Router Firmware links.'),
+            'singular' => true,
+            'autoload' => true
+        );
+    }
+
+    public function ___install() {
+      // Creating fields and templates for the Node manegemant
+    }
+
+    public function init() {
+      if (isset ($this->data ['src']))
+          $this->src = $this->data ['src'];
+
+      // run the module every 2 minutes
+      //$this->addHook('LazyCron::every2Minutes', $this, 'set_nodeinfo');
+    }
+
+    protected function cache_data() {
+        $htmlcache = file_get_contents($this->src);
+        $this->cache = json_decode($htmlcache);
+        $this->gen_firmwarecache();
+    }
+
+    /**
+     * Create the cache to minimize the api requests.
+     *
+     * TODO!!
+     */
+    protected function gen_firmwarecache() {
+        foreach($this->cache->firmware as $firmware) {
+            $this->cache_firmware[base64_encode(strtoupper($farmware->filename))] = $firmware;
+        }
+        $this->cache=false;
+    }
+
+    public function get_firmware($router) {
+      $this->cache_data();
+
+      $router = $this->get_Page($router);
+      $vendor = strtolower($router->parent->title);
+      $model = strtolower($router->title);
+
+      
+    }
+
+
+
+    /**
+     * Helper function to get wire Page
+     * @param  [string ore page] $router [String ore wire Page]
+     * @return [Page]         [Returne a wire page or NullPage]
+     */
+    private function get_page($router) {
+      if($router instanceof Page){
+        return $router;
+      }
+
+      return wire('pages')->get("title=$router");
+    }
+
+    public function hookModuleSave(HookEvent $event) {
+       $className = $event->arguments [0];
+       if ($className != get_class($this)) return;
+       $this->validateConfiguration();
+     }
+
+    static public function getModuleConfigInputfields(array $data) {
+        $inputfields = new InputfieldWrapper ();
+
+        $srcField = wire('modules')->get('InputfieldText');
+        $srcField->name = 'src';
+        $srcField->columnWidth = 100;
+        $srcField->label = __('JSON URL');
+        $srcField->required = 1;
+        if (isset ($data ['src']))
+            $srcField->value = $data ['src'];
+        $srcField->description = __('The URL to the JSON file with all node data.');
+        $inputfields->add($srcField);
+
+        return $inputfields;
+    }
+}
