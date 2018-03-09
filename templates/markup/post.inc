@@ -5,7 +5,7 @@
  $image = (count($page->images) ? "<img class='responsive' src='{$page->images->first()->size(300,200)->url}'></img>" : "");
  ?>
 <div id='article' class='blog-list large-9 columns'>
-  <article id='article-{$page->id}' class='row article'>
+  <article id='article-<?=$page->id?>' class='row article'>
     <div class='medium-3 columns'>
       <?=$image?>
     </div>
@@ -27,7 +27,7 @@
       Unterstütze Freifunk und stelle deinen eigenen Freifunk-Router
       auf um das Netz zu erweitern.
     </p>
-    <a href='#' class='button expand'>Informier dich jetzt!</a>
+    <a href='<?=$pages->get('/')->httpUrl ?>#mitmachen' class='button expand'>Informier dich jetzt!</a>
   </div>
   <?php echo renderNewNodesList(); ?>
 </div>

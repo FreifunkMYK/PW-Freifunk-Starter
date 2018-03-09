@@ -13,7 +13,7 @@
       Unterstütze Freifunk und stelle deinen eigenen Freifunk-Router
       auf um das Netz zu erweitern.
     </p>
-    <a href='#' class='button expand'>Informier dich jetzt!</a>
+    <a href="<?=$pages->get('/')->httpUrl?>#mitmachen" class='button expand'>Informier dich jetzt!</a>
   </div>
   <?php echo renderNewNodesList(); ?>
 </div>
