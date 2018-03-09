@@ -6,8 +6,9 @@
         <th>Name</th>
         <th>MAC</th>
         <th>Firmware</th>
+        <th>Kommentar</th>
         <th>Status</th>
-        <th>User</th>
+        <th>Option</th>
       </tr>
     </thead>
     <tbody>

@@ -11,12 +11,14 @@ $longitude = str_replace(',','.',$page->longitude);
 $nearnodes = umkreissuche("node", $page->latitude, $page->longitude, 5);
 
 $marker = '';
-foreach($nearnodes as $node){
-  $marker .= "L.circle([".str_replace(',','.',$node->latitude).",".str_replace(',','.',$node->longitude)."], 10,{
-                color:'blue',
-                fillColor:".($page->online == 1 ? "'green'" : "'red'"). "
-              }).addTo(map)
-                .bindPopup('<a href=\"".$node->httpUrl."\">{$node->subtitle}</a><br>".getDistance($node->dist)." entfernt');";
+if($nearnodes){
+  foreach($nearnodes as $node){
+    $marker .= "L.circle([".str_replace(',','.',$node->latitude).",".str_replace(',','.',$node->longitude)."], 10,{
+                  color:'blue',
+                  fillColor:".($page->online == 1 ? "'green'" : "'red'"). "
+                }).addTo(map)
+                  .bindPopup('<a href=\"".$node->httpUrl."\">{$node->subtitle}</a><br>".getDistance($node->dist)." entfernt');";
+  }
 }
 
 $script = "<script>
@@ -41,6 +43,6 @@ $script = "<script>
 $page->losttime = time_elapsed_string($page->getUnformatted('lastseen'));
 $content = renderPage();
 if($input->post->delete && !$input->post->cancle){
-  deleteNode($node);
+  deleteNode($page);
   $content = "Der Node wurde erfolgreich gelöscht. <a href='{$pages->get('/node/')->httpUrl}'>Zurück</a>";
 }

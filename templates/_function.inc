@@ -466,33 +466,29 @@ function registerNode($mac, $key){
 /**
  * deleteNode deletes one ore more nodes.
  */
-function deleteNode($posts){
+function deleteNode($nodes){
   // Erzeuge ein Array aus $posts
-  if(!$posts instanceof PageArray){
-    if($posts instanceof Page){
-      $post = $posts;
-      $posts = new PageArray();
-      $posts->add($post);
-    } else if(empty($posts)){
-      $post = wire('page');
-      $posts = new PageArray();
-      $posts->add($post);
-    } else if(is_string($posts)){
+  if(!$nodes instanceof PageArray){
+    if($nodes instanceof Page){
+      $node = $nodes;
+      $nodes = new PageArray();
+      $nodes->add($node);
+    } else if(is_string($nodes)){
       // selector string
-      $selector = $posts;
-      $posts = wire('pages')->find("$selector");
+      $selector = $nodes;
+      $nodes = wire('pages')->find("$selector");
     }
   }
 
-  foreach($posts as $post){
-    if($post->template != "node") break; // Only for nodes
-    $pages = wire('pages');
-    $user = wire('user');
-    if($post->operator->id != $user->id) break; // delete only if the user owner of the node
+  $page = wire('page');
+  $user = wire('user');
 
-    $debug = var_export($post, true);
-    wire("log")->save('delete', "Delete page: $post->title from owner $post->operator == $user->id");
-    $pages->delete($post, true);
+  foreach($nodes as $node){
+    if($node->template != "node") continue; // Only for nodes
+    if($node->operator->id != $user->id) continue; // delete only if the user is owner of the node
+
+    wire("log")->save('delete', "Delete page: $node->title from owner $node->operator == $user->id");
+    $page->delete($node, true);
   }
 
   return true;
@@ -632,8 +628,9 @@ function umkreissuche($template, $latitude, $longitude, $dist = 5, $sort = true)
   // Return if the Template dosn't exists
   if(!wire('templates')->get("$template")) return;
   $t = wire('templates')->get("$template");
-  // Return if Template didn't has latitude or longitude field!
+  // Return if Template didn't has latitude or longitude field or is empty!
   if(!$t->hasField('latitude')) return;
+  if($t->hasField('latitude')) return;
 
   $ursprungsbreite = str_replace(",", ".", $latitude);
   $ursprungslaenge = str_replace(",", ".", $longitude);
@@ -702,6 +699,7 @@ function getDistance($dist){
  * http://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago
  */
 function time_elapsed_string($ptime){
+    if(empty($ptime)) return '';
     $etime = time() - $ptime;
 
     if ($etime < 1){

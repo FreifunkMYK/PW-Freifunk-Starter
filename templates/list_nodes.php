@@ -298,8 +298,8 @@ if($input->urlSegment1){
   foreach($nodes as $node){
 
     $table .="<tr class='".($node->online == 1 ? "alert success" : "alert danger")."'>
-              <td><a href='$node->httpUrl'>$node->subtitle</a></td>
-              <td>$node->title</td>
+              <td>$node->subtitle</td>
+              <td><a href='$node->httpUrl'>$node->title</a></td>
               <td>$node->node_firmware</td>
               <td>".($node->online == 1 ? "<span style='color:green'>online</span>" : "<span style='color:red'>offline</a>")."</td>
               <td>{$node->operator->name}</td>
