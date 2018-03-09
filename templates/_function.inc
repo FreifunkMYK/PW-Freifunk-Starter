@@ -480,7 +480,6 @@ function deleteNode($nodes){
     }
   }
 
-  $page = wire('page');
   $user = wire('user');
 
   foreach($nodes as $node){
@@ -488,7 +487,7 @@ function deleteNode($nodes){
     if($node->operator->id != $user->id) continue; // delete only if the user is owner of the node
 
     wire("log")->save('delete', "Delete page: $node->title from owner $node->operator == $user->id");
-    $page->delete($node, true);
+    $node->delete();
   }
 
   return true;
