@@ -26,9 +26,9 @@ $config->scripts->add($config->urls->templates.'js/app-dist.js');
 * Hendle Login
 *******************************/
 if(!wire('user')->isLoggedin()){
-	if($input->post->user && $input->post->pass) {
-		$u = $sanitizer->username($input->post->user);
-		$pass = $input->post->pass;
+	if($input->post->username && $input->post->password) {
+		$u = $sanitizer->username($input->post->username);
+		$pass = $input->post->password;
 
 		if($session->login($u, $pass)) {
 			// login successful
