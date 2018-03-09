@@ -78,7 +78,7 @@
             <br/>Durch Freifunk-Rheinland können wir eine Verbindung ins Internet bereitstellen und euch vor der Störerhaftung bewahren. Wir bitten um <a href="https://www.freifunk-rheinland.net/mitmachen/spenden/">Spenden für Freifunk-Rheinland</a> um diesen Service auch in Zukunft bieten zu können.</p>
         </div>
         <div class='columns large-4'>
-          <img class='responsive' src='https://placehold.it/350x200'></img>
+          <img class='responsive' src="<?= $config->urls->templates ?>/img/freifunk-rheinland-logo.png"></img>
         </div>
       </div>
 
