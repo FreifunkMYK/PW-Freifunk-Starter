@@ -3,14 +3,17 @@
 class ffRouterFirmware extends WireData implements Module, ConfigurableModule{
     protected $cache = false;
     protected $cache_firmware = array();
+    protected $cache_hardware = array();
+    protected $cache_vendor = array();
     protected $src, $firmware;
+    protected $cache_file = "routerFirmwareCache.json";
 
     public static function getModuleInfo() {
         return array(
-            'title' => __('FF Router Firmware'),
+            'title' => __('Freifunk Router Manager'),
             'version' => '001',
             'author' => 'Kreativmonkey',
-            'summary' => __('Fetch Router Firmware links.'),
+            'summary' => __('Manage Router for the Webpage.'),
             'singular' => true,
             'autoload' => true
         );
@@ -24,14 +27,30 @@ class ffRouterFirmware extends WireData implements Module, ConfigurableModule{
       if (isset ($this->data ['src']))
           $this->src = $this->data ['src'];
 
+      $this->cache_data();
       // run the module every 2 minutes
       //$this->addHook('LazyCron::every2Minutes', $this, 'set_nodeinfo');
     }
 
     protected function cache_data() {
-        $htmlcache = file_get_contents($this->src);
-        $this->cache = json_decode($htmlcache);
-        $this->gen_firmwarecache();
+
+      if (file_exists($this->cache_file) && (filemtime($this->cache_file) > (time() - 60 * 10 ))) {
+         // Cache file is less than five minutes old.
+         // Don't bother refreshing, just use the file as-is.
+         $this->cache = json_decode(file_get_contents($this->cache_file));
+         $this->cache_vendor = (array)$this->cache->vendor;
+         $this->cache_hardware = (array)$this->cache->hardware;
+         $this->cache_firmware = (array)$this->cache->firmware;
+         $this->cache = false;
+      } else {
+         // Our cache is out-of-date, so load the data from our remote server,
+         // and also save it over our cache for next time.
+         $htmlcache = file_get_contents($this->src);
+         $this->cache = json_decode($htmlcache);
+         $this->gen_cache();
+         file_put_contents($this->cache_file, json_encode($this->cache), LOCK_EX);
+         $this->cache = false;
+      }
     }
 
     /**
@@ -39,11 +58,23 @@ class ffRouterFirmware extends WireData implements Module, ConfigurableModule{
      *
      * TODO!!
      */
-    protected function gen_firmwarecache() {
+    protected function gen_cache() {
         foreach($this->cache as $key => $value) {
+            // generate vendor list
+            if(!array_key_exists($value->vendor, $this->cache_vendor)) $this->cache_vendor[$value->vendor] = array();
+            if(!in_array($value->hardware, $this->cache_vendor[$value->vendor])) array_push($this->cache_vendor[$value->vendor], $value->hardware);
+
+            // generate hardware list
+            if(!array_key_exists($value->hardware, $this->cache_hardware)) $this->cache_hardware[$value->hardware] = array();
+            if(!in_array($key, $this->cache_hardware[$value->hardware])) array_push($this->cache_hardware[$value->hardware], $key);
+
+            // generate firmware list
             $this->cache_firmware[$key] = $value;
         }
-        $this->cache=false;
+        $this->cache = array();
+        $this->cache["vendor"] = $this->cache_vendor;
+        $this->cache["hardware"] = $this->cache_hardware;
+        $this->cache["firmware"] = $this->cache_firmware;
     }
 
     /**
@@ -53,24 +84,23 @@ class ffRouterFirmware extends WireData implements Module, ConfigurableModule{
      * @return [type]         [description]
      */
     public function get_firmware($router) {
-      $this->cache_data();
-
       $router = $this->get_Page($router);
       $vendor = strtolower($router->parent->title);
       $model = strtolower($router->title);
       $firmware_list = array();
 
-      foreach($this->cache_firmware as $key => $firmware) {
-        if($firmware->vendor != $vendor) continue;
-        if($firmware->hardware != $model) continue;
-
-        $firmware_list[$key] = $firmware;
+      if(!array_key_exists($model, $this->cache_hardware)) return $firmware_list;
+      foreach($this->cache_hardware[$model] as $filepath) {
+        $firmware_list[$filepath] = $this->cache_firmware[$filepath];
       }
 
       return $firmware_list;
     }
 
 
+    public function list_hardware() {
+      return $this->cache_vendor;
+    }
 
     /**
      * Helper function to get wire Page

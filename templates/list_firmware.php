@@ -3,6 +3,13 @@ $routers = $pages->find("template=router, sort=title");
 $ffFirmware = $modules->get('ffRouterFirmware');
 
 $table_tr = "";
+
+$useMain = false;
+
+echo "<pre>";
+var_dump($ffFirmware->list_hardware());
+echo "</pre>";
+/*
 foreach ($routers as $router) {
   $firmwareList = $ffFirmware->get_firmware($router);
 
@@ -24,3 +31,5 @@ foreach ($routers as $router) {
 
   $content .= "<h2>{$router->title}</h2>$firmwareTable";
 }
+
+*/
