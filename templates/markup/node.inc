@@ -19,6 +19,10 @@
       <td><?=$page->title?></td>
     </tr>
     <tr>
+      <th>Kommentar</th>
+      <td><?=$page->comment?></td>
+    </tr>
+    <tr>
       <th>IPv6</th>
       <td><a href="http://[<?=$page->ipv6?>]/"><?=$page->ipv6?></a></td>
     </tr>
@@ -54,7 +58,10 @@
     </tr>
     <?php } ?>
   </table>
-  <div id='map' style='width:100%; height:200px' class='map'></div>
+
+  <?php if($page->latitude){ ?>
+    <div id='map' style='width:100%; height:200px' class='map'></div>
+  <?php } ?>
 
   <?php if($page->createdUser == $user){ ?>
     <a href="?delete=true""><button class="btn alert"><i class="fa fa-close"></i> Delete</button></a>

@@ -1,4 +1,4 @@
-<article id='article' class='medium-8 small-12 columns'>
+<article id='article' class='medium-10 small-12 columns'>
   <h1><?=$page->title?>s <a title="Node hinzufügen" class="right" href="<?=$pages->get('/node/')->httpUrl?>add"><i class='fa fa-plus-circle'></i></a></h1>
   <table class='node-list'>
     <thead>
@@ -8,7 +8,6 @@
         <th>Firmware</th>
         <th>Kommentar</th>
         <th>Status</th>
-        <th>Option</th>
       </tr>
     </thead>
     <tbody>

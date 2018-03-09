@@ -301,8 +301,8 @@ if($input->urlSegment1){
               <td>$node->subtitle</td>
               <td><a href='$node->httpUrl'>$node->title</a></td>
               <td>$node->node_firmware</td>
+              <td>$node->comment</td>
               <td>".($node->online == 1 ? "<span style='color:green'>online</span>" : "<span style='color:red'>offline</a>")."</td>
-              <td>{$node->operator->name}</td>
             </tr>";
   }
 
