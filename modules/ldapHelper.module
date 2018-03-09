@@ -9,7 +9,7 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
     public static function getModuleInfo() {
         return array(
             'title' => __('LDAP Helper'),
-            'version' => '006',
+            'version' => '007',
             'author' => 'Kreativmonkey',
             'summary' => __('Hendle LDAP Communication for Processwire'),
             'singular' => true,
@@ -237,7 +237,10 @@ class ldapHelper extends WireData implements Module, ConfigurableModule
     public function ldapHelperDeleteUser(HookEvent $event) {
         $page = $event->arguments("page");
 
-        if (!$page->id && !$page->template->name === "user") return; // Return if User is not deleted
+        // Check if the Page who is deleted a user
+        if($page->template != "user") return;
+        if(!$page->id) return;
+
         $username = $page->name;
 
         // bind mit passendem dn für aktualisierenden Zugriff
