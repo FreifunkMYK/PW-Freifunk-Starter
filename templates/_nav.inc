@@ -93,8 +93,8 @@ function isActive(Page $page, Page $nav){
 <div id="signin" class="f-dropdown small content" data-dropdown-content aria-autoclose="false">
     <form id="formLogin" action='./' method='post'>
       <div >
-        <input name="username" id="user" placeholder="Benutzername" type="text" />
-        <input name="password" id="pass" placeholder="Passwort" type="password" />
+        <input name="username" id="username" placeholder="Benutzername" type="text" />
+        <input name="password" id="password" placeholder="Passwort" type="password" />
       </div>
       <div >
         <button type="submit" id="btnLogin" name='submit' value='Login' class="btn btn-default">Login</button>
