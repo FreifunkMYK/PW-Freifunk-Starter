@@ -1,10 +1,11 @@
 <?php
 $routers = $pages->find("template=router, sort=title");
+$ffFirmware = $modules->get('ffRouterFirmware');
 
 $table_tr = "";
 foreach ($routers as $router) {
-  $companyRouter = strtolower($router->parent->title) ."-". strtolower($router->title);
-  $firmwareList = json_decode(file_get_contents("http://firmware.freifunk-myk.de/.static/filter/?filter={$companyRouter}&branch[]=stable&branch[]=beta&output=json"));
+  $firmwareList = $ffFirmware->get_firmware($router);
+
   foreach ($firmwareList as $key => $firmware) {
     $template = new TemplateFile($config->paths->templates . "markup/router_firmware_table_tr.inc");
     $template->set('version', $firmware->version);
